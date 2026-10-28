@@ -28,19 +28,36 @@ export default function BookDetailPage({ params }: { params: Promise<{ id: strin
   const [lastChapterId, setLastChapterId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/books')
-      .then(r => r.json())
-      .then((books: Book[]) => {
-        const found = books.find(b => b.id === id) || null;
-        setBook(found);
-        if (found) {
-          const prog = loadBookProgress(found.id);
-          if (prog) {
-            setCompletedChapters(prog.completedChapters || []);
-            setLastChapterId(prog.chapterId || null);
-          }
+    const loadData = async () => {
+      let books: Book[] = [];
+      try {
+        const r = await fetch('/api/books');
+        if (r.ok) {
+          books = await r.json();
         }
-      });
+      } catch {
+        // ignore
+      }
+      if (!books.length) {
+        try {
+          const fallbackUrl = (process.env.NEXT_PUBLIC_BASE_PATH || '') + '/data/books.json';
+          const r = await fetch(fallbackUrl);
+          if (r.ok) books = await r.json();
+        } catch {
+          // ignore
+        }
+      }
+      const found = books.find(b => b.id === id) || null;
+      setBook(found);
+      if (found) {
+        const prog = loadBookProgress(found.id);
+        if (prog) {
+          setCompletedChapters(prog.completedChapters || []);
+          setLastChapterId(prog.chapterId || null);
+        }
+      }
+    };
+    loadData();
   }, [id]);
 
   if (!book) {

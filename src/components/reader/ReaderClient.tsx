@@ -90,20 +90,32 @@ export default function ReaderClient() {
       return;
     }
 
-    fetch('/api/books')
-      .then(res => res.json())
-      .then((books: Book[]) => {
-        for (const b of books) {
-          booksCatalogCache.set(b.id, b);
+    const loadBook = async () => {
+      let books: Book[] = [];
+      try {
+        const res = await fetch('/api/books');
+        if (res.ok) books = await res.json();
+      } catch {
+        // ignore
+      }
+      if (!books.length) {
+        try {
+          const fallbackUrl = (process.env.NEXT_PUBLIC_BASE_PATH || '') + '/data/books.json';
+          const res = await fetch(fallbackUrl);
+          if (res.ok) books = await res.json();
+        } catch {
+          // ignore
         }
-        const found = books.find(b => b.id === bookId);
-        if (!found) return;
-        setBook(found);
-        initChapter(found);
-      })
-      .catch(err => {
-        console.error('Failed to load book data:', err);
-      });
+      }
+      for (const b of books) {
+        booksCatalogCache.set(b.id, b);
+      }
+      const found = books.find(b => b.id === bookId);
+      if (!found) return;
+      setBook(found);
+      initChapter(found);
+    };
+    loadBook();
   }, [bookId]);
 
   const initChapter = (b: Book) => {

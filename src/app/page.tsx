@@ -69,6 +69,18 @@ export default function HomePage() {
       if (res.ok) {
         const data: Book[] = await res.json();
         setBooks(data);
+        return;
+      }
+    } catch {
+      // ignore
+    }
+    // Fallback to static bundled catalog on GitHub Pages
+    try {
+      const fallbackUrl = (process.env.NEXT_PUBLIC_BASE_PATH || '') + '/data/books.json';
+      const res = await fetch(fallbackUrl);
+      if (res.ok) {
+        const data: Book[] = await res.json();
+        setBooks(data);
       }
     } catch (err) {
       console.error('Failed to load books catalog:', err);
