@@ -51,7 +51,14 @@ jobs:
         env:
           GITHUB_PAGES: "true"
           NEXT_PUBLIC_BASE_PATH: "/net-lib"
-        run: npm run build
+        run: |
+          if [ -d "src/app/api" ]; then
+            mv src/app/api ./api_routes_backup
+          fi
+          npm run build
+          if [ -d "./api_routes_backup" ]; then
+            mv ./api_routes_backup src/app/api
+          fi
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

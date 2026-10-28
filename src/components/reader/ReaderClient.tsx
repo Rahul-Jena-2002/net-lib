@@ -259,8 +259,12 @@ export default function ReaderClient() {
     );
   }
 
-  // Direct streaming PDF URL
-  const pdfStreamUrl = activeChapter
+  // Direct streaming PDF URL with static fallback for GitHub Pages
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+  const isStaticHost = typeof window !== 'undefined' && window.location.hostname.includes('github.io');
+  const pdfStreamUrl = isStaticHost
+    ? `${basePath}/sample.pdf`
+    : activeChapter
     ? `/api/pdf?book=${encodeURIComponent(book.id)}&chapter=${encodeURIComponent(activeChapter.id)}`
     : `/api/pdf?book=${encodeURIComponent(book.id)}`;
 
