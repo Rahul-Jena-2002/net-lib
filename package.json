@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "next dev 2>/dev/null || node ./node_modules/next/dist/bin/next dev",
+    "build": "next build 2>/dev/null || node ./node_modules/next/dist/bin/next build",
+    "start": "next start 2>/dev/null || node ./node_modules/next/dist/bin/next start",
     "test": "node --test --experimental-strip-types tests/**/*.test.ts"
   },
   "dependencies": {

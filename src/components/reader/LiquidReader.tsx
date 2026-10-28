@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import { Document, Page, pdfjs } from 'react-pdf';
 import {
   ZoomIn,
@@ -178,6 +179,21 @@ export default function LiquidReader({
           file={fileSource}
           onLoadSuccess={handleDocumentLoadSuccess}
           onLoadError={handleDocumentLoadError}
+          error={
+            <div className="m-auto text-center p-8 liquid-glass rounded-2xl max-w-md my-12">
+              <AlertCircle className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+              <h3 className="font-bold text-sm mb-1 text-slate-100">Publication Document Unavailable</h3>
+              <p className="text-xs text-slate-400 mb-4">
+                This document is part of your local collection and is not stored in cloud memory.
+              </p>
+              <Link
+                href="/"
+                className="px-4 py-1.5 rounded-full liquid-glass-pill text-xs font-semibold inline-block text-white"
+              >
+                Back to Library
+              </Link>
+            </div>
+          }
           loading={
             <div className="m-auto py-24 flex flex-col items-center justify-center gap-3 opacity-60">
               <Loader2 className="w-8 h-8 text-sky-400 animate-spin" />

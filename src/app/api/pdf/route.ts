@@ -52,7 +52,12 @@ export async function GET(req: NextRequest) {
   }
 
   if (!fs.existsSync(filePath)) {
-    return NextResponse.json({ error: `File not found on disk: ${filePath}` }, { status: 404 });
+    const fallbackSample = path.resolve(process.cwd(), 'public/sample.pdf');
+    if (fs.existsSync(fallbackSample)) {
+      filePath = fallbackSample;
+    } else {
+      return NextResponse.json({ error: `File not found on disk: ${filePath}` }, { status: 404 });
+    }
   }
 
   const stat = fs.statSync(filePath);
