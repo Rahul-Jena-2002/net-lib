@@ -1,0 +1,254 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  min-height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Ensure full-width viewport coverage across all layout containers */
+.min-h-screen,
+header,
+main,
+section,
+footer {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   APPLE LIQUID GLASS DESIGN SYSTEM (VisionOS & macOS Specification)
+   Optical refraction, dual-layer specular highlights, and fluid depth
+   ───────────────────────────────────────────────────────────── */
+
+/* Dark Mode Liquid Glass (Permanent Default) */
+:root,
+.theme-dark {
+  --canvas-bg: #07090e;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  
+  /* Navbar Frosted Glass: 55% translucent with intense localized optical blur */
+  --glass-nav-bg: rgba(11, 15, 25, 0.55);
+  --glass-nav-shadow: none;
+
+  --glass-bg: rgba(13, 18, 30, 0.70);
+  --glass-surface: rgba(18, 24, 38, 0.75);
+  --glass-border-top: rgba(255, 255, 255, 0.30);
+  --glass-border-sides: rgba(255, 255, 255, 0.14);
+  --glass-border-bottom: rgba(255, 255, 255, 0.08);
+  --glass-inner-shadow: none;
+  --glass-drop-shadow: none;
+
+  --glass-pill-bg: rgba(255, 255, 255, 0.06);
+  --glass-pill-hover: rgba(255, 255, 255, 0.12);
+  --glass-pill-active: rgba(255, 255, 255, 0.18);
+  --glass-pill-border: rgba(255, 255, 255, 0.12);
+  --glass-pill-border-top: rgba(255, 255, 255, 0.24);
+  --glass-pill-border-hover: rgba(255, 255, 255, 0.28);
+  --glass-pill-specular: transparent;
+  --glass-pill-specular-hover: transparent;
+}
+
+body {
+  background-color: var(--canvas-bg);
+  color: var(--text-primary);
+}
+
+/* Apple Liquid Glass Floating Navigation Bar (Authentic Dark Liquid Glass) */
+.liquid-glass-nav {
+  background: rgba(13, 17, 28, 0.78);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.20),
+    0 16px 40px -10px rgba(0, 0, 0, 0.50);
+  transition: all 0.25s ease;
+}
+
+/* Apple VisionOS Liquid Glass Dropdown Menu (Translucent Smoked Crystal Glass) */
+.liquid-glass-dropdown {
+  background: rgba(13, 18, 30, 0.82);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-top: 1px solid rgba(255, 255, 255, 0.40);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25),
+    0 24px 50px -10px rgba(0, 0, 0, 0.60),
+    0 0 20px rgba(56, 189, 248, 0.15);
+}
+
+/* Liquid Glass Active Highlight Capsule (Electric Cyan Glow & Specular Sheen) */
+.liquid-glass-active-item {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.28) 0%, rgba(99, 102, 241, 0.22) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.55);
+  border-top: 1px solid rgba(255, 255, 255, 0.50);
+  box-shadow: 
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.35),
+    0 0 15px rgba(56, 189, 248, 0.30);
+  color: #ffffff !important;
+}
+
+/* Liquid Glass Item Hover Refraction */
+.liquid-glass-item {
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  color: #f1f5f9;
+}
+.liquid-glass-item:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-top-color: rgba(255, 255, 255, 0.30);
+  color: #ffffff !important;
+}
+
+/* Liquid Glass Trigger Capsule */
+.liquid-glass-trigger {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.20);
+  color: #ffffff;
+  transition: all 0.2s ease;
+}
+.liquid-glass-trigger:hover,
+.liquid-glass-trigger.active {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.28) 0%, rgba(99, 102, 241, 0.20) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.50);
+  border-top: 1px solid rgba(255, 255, 255, 0.50);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.30), 0 0 14px rgba(56, 189, 248, 0.25);
+  color: #ffffff;
+}
+
+/* Sleek Translucent Glass Scrollbar */
+.glass-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+.glass-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.glass-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.glass-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.glass-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+/* Apple Liquid Glass Container Utility (Zero Drop Shadow, pure optical glass) */
+.liquid-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(28px) saturate(190%) contrast(102%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%);
+  border-top: 1px solid var(--glass-border-top);
+  border-left: 1px solid var(--glass-border-sides);
+  border-right: 1px solid var(--glass-border-sides);
+  border-bottom: 1px solid var(--glass-border-bottom);
+  box-shadow: none;
+}
+
+/* Apple Liquid Glass Floating Modal & Dialog (Intense 36px Frosted Optical Blur) */
+.liquid-glass-modal {
+  background: var(--glass-bg);
+  backdrop-filter: blur(36px) saturate(200%) contrast(102%);
+  -webkit-backdrop-filter: blur(36px) saturate(200%) contrast(102%);
+  border: 1px solid var(--glass-border-sides);
+  border-top: 1px solid var(--glass-border-top);
+  box-shadow: none !important;
+}
+
+/* Liquid Glass Capsule / Pill (Completely shadow-free, weightless optical glass) */
+.liquid-glass-pill {
+  background: var(--glass-pill-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-pill-border);
+  border-top-color: var(--glass-pill-border-top);
+  box-shadow: none !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-glass-pill:hover {
+  background: var(--glass-pill-hover);
+  border-color: var(--glass-pill-border-hover);
+  box-shadow: none !important;
+  transform: translateY(-0.5px);
+}
+
+.liquid-glass-pill:active {
+  background: var(--glass-pill-active);
+  transform: translateY(0) scale(0.98);
+  box-shadow: none !important;
+}
+
+/* Ambient Optical Background Lighting (Gives Liquid Glass real light fields to bend & refract) */
+.ambient-optical-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.ambient-light-orb-1 {
+  position: absolute;
+  top: -20%;
+  left: 30%;
+  width: 900px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(99, 102, 241, 0.08) 50%, transparent 75%);
+  border-radius: 9999px;
+  filter: blur(140px);
+}
+
+.ambient-light-orb-2 {
+  position: absolute;
+  top: 40%;
+  right: -10%;
+  width: 700px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, rgba(59, 130, 246, 0.06) 50%, transparent 75%);
+  border-radius: 9999px;
+  filter: blur(140px);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}

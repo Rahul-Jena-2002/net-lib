@@ -1,0 +1,92 @@
+[
+  {
+    "id": "core-java-impatient-4e",
+    "title": "Core Java for the Impatient",
+    "author": "Cay S. Horstmann",
+    "publisher": "Pearson",
+    "description": "A fast-paced introduction to Java for experienced programmers. Covers all of Java 17's key features concisely.",
+    "coverColor": "#1a6b8a",
+    "tags": ["Java", "Programming", "Beginner"],
+    "folder": "Core Java for the Impatient, 4th Edition",
+    "chapters": [
+      { "id": "toc", "title": "Table of Contents", "filename": "Tables of Content Core Java for the Impatient, 4th Edition.pdf", "order": 0 },
+      { "id": "preface", "title": "Preface", "filename": "Preface _ Core Java for the Impatient, 4th Edition.pdf", "order": 1 },
+      { "id": "ch01", "title": "1. Fundamental Programming Structures", "filename": "1. Fundamental Programming Structures _ Core Java for the Impatient, 4th Edition.pdf", "order": 2 },
+      { "id": "ch02", "title": "2. Object-Oriented Programming", "filename": "2. Object-Oriented Programming _ Core Java for the Impatient, 4th Edition.pdf", "order": 3 },
+      { "id": "ch03", "title": "3. Interfaces and Lambda Expressions", "filename": "3. Interfaces and Lambda Expressions _ Core Java for the Impatient, 4th Edition.pdf", "order": 4 },
+      { "id": "ch04", "title": "4. Inheritance and Reflection", "filename": "4. Inheritance and Reflection _ Core Java for the Impatient, 4th Edition.pdf", "order": 5 },
+      { "id": "ch05", "title": "5. Exceptions, Assertions, and Logging", "filename": "5. Exceptions, Assertions, and Logging _ Core Java for the Impatient, 4th Edition.pdf", "order": 6 },
+      { "id": "ch06", "title": "6. Generic Programming", "filename": "6. Generic Programming _ Core Java for the Impatient, 4th Edition.pdf", "order": 7 },
+      { "id": "ch07", "title": "7. Collections", "filename": "7. Collections _ Core Java for the Impatient, 4th Edition.pdf", "order": 8 },
+      { "id": "ch08", "title": "8. Streams", "filename": "8. Streams _ Core Java for the Impatient, 4th Edition.pdf", "order": 9 },
+      { "id": "ch09", "title": "9. Processing Input and Output", "filename": "9. Processing Input and Output _ Core Java for the Impatient, 4th Edition.pdf", "order": 10 },
+      { "id": "ch10", "title": "10. Concurrent Programming", "filename": "10. Concurrent Programming _ Core Java for the Impatient, 4th Edition.pdf", "order": 11 },
+      { "id": "ch11", "title": "11. Annotations", "filename": "11. Annotations _ Core Java for the Impatient, 4th Edition.pdf", "order": 12 },
+      { "id": "ch12", "title": "12. The Java Platform Module System", "filename": "12. The Java Platform Module System _ Core Java for the Impatient, 4th Edition.pdf", "order": 13 },
+      { "id": "index", "title": "Index", "filename": "Index _ Core Java for the Impatient, 4th Edition.pdf", "order": 14 }
+    ],
+    "addedAt": "2026-10-28T00:00:00Z"
+  },
+  {
+    "id": "core-java-vol1-14e",
+    "title": "Core Java, Vol. I — Fundamentals (14th Ed.)",
+    "author": "Cay S. Horstmann",
+    "publisher": "Pearson",
+    "description": "The definitive guide to Java fundamentals — objects, generics, collections, lambdas, streams, and more.",
+    "coverColor": "#7b2d8b",
+    "tags": ["Java", "Programming", "Fundamentals"],
+    "folder": "Code Java Vol. I_Fundamentals, 14th Edition",
+    "chapters": [
+      { "id": "ch01", "title": "1. An Introduction to Java", "filename": "1. An Introduction to Java _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 1 },
+      { "id": "ch02", "title": "2. The Java Programming Environment", "filename": "2. The Java Programming Environment _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 2 },
+      { "id": "ch03", "title": "3. Fundamental Programming Structures", "filename": "3. Fundamental Programming Structures in Java _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 3 },
+      { "id": "ch04", "title": "4. Objects and Classes", "filename": "4. Objects and Classes _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 4 },
+      { "id": "ch05", "title": "5. Inheritance", "filename": "5. Inheritance _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 5 },
+      { "id": "ch06", "title": "6. Interfaces, Lambda Expressions, and Inner Classes", "filename": "6. Interfaces, Lambda Expressions, and Inner Classes _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 6 },
+      { "id": "ch07", "title": "7. Exceptions, Assertions, and Logging", "filename": "7. Exceptions, Assertions, and Logging _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 7 },
+      { "id": "ch08", "title": "8. Generic Programming", "filename": "8. Generic Programming _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 8 },
+      { "id": "ch09", "title": "9. Collections", "filename": "9. Collections _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 9 },
+      { "id": "ch10", "title": "10. Concurrency", "filename": "10. Concurrency _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 10 },
+      { "id": "ch11", "title": "11. Annotations", "filename": "11. Annotations _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 11 },
+      { "id": "ch12", "title": "12. The Java Platform Module System", "filename": "12. The Java Platform Module System _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 12 },
+      { "id": "appendix", "title": "Appendix", "filename": "Appendix _ Core Java, Vol. I_ Fundamentals, 14th Edition.pdf", "order": 13 }
+    ],
+    "addedAt": "2026-10-28T00:00:00Z"
+  },
+  {
+    "id": "core-java-vol1-12",
+    "title": "Core Java, Volume I — Fundamentals (12th Ed.)",
+    "author": "Cay S. Horstmann",
+    "publisher": "Pearson",
+    "description": "Classic reference for Java fundamentals, 12th edition.",
+    "coverColor": "#2d6a4f",
+    "tags": ["Java", "Programming"],
+    "folder": "",
+    "filename": "Core Java Vol 12 - I.pdf",
+    "addedAt": "2026-10-28T00:00:00Z"
+  },
+  {
+    "id": "core-java-vol2-13",
+    "title": "Core Java, Volume II — Advanced Features (13th Ed.)",
+    "author": "Cay S. Horstmann",
+    "publisher": "Pearson",
+    "description": "Advanced Java features: networking, databases, internationalization, and more.",
+    "coverColor": "#b5451b",
+    "tags": ["Java", "Advanced", "Programming"],
+    "folder": "",
+    "filename": "Core Java Vol  13 - II.pdf",
+    "addedAt": "2026-10-28T00:00:00Z"
+  },
+  {
+    "id": "head-first-java",
+    "title": "Head First Java",
+    "author": "Kathy Sierra & Bert Bates",
+    "publisher": "O'Reilly",
+    "description": "A brain-friendly guide to Java — the classic visual learning approach.",
+    "coverColor": "#c9691a",
+    "tags": ["Java", "Beginner", "Visual Learning"],
+    "folder": "",
+    "filename": "head-first-java.pdf",
+    "addedAt": "2026-10-28T00:00:00Z"
+  }
+]
