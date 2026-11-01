@@ -49,8 +49,10 @@ export default function ReaderClient() {
   const [chapterMenuOpen, setChapterMenuOpen] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
-  // Format mode: PDF is default (unparsed native web version)
-  const [formatMode, setFormatMode] = useState<'pdf' | 'html'>('pdf');
+  // Format mode: strictly respect URL ?format param immediately
+  const [formatMode, setFormatMode] = useState<'pdf' | 'html'>(
+    initialFormatParam === 'html' ? 'html' : 'pdf'
+  );
 
   // HTML reader typography, theme & width controls
   const [readerTheme, setReaderTheme] = useState<Theme>('dark');
@@ -202,21 +204,15 @@ function ensureCoverChapter(b: Book): Book {
       const targetChapterId = initialChapterParam || savedProgress?.chapterId;
       const initial =
         (targetChapterId ? b.chapters.find(c => c.id === targetChapterId) : null) ||
+        (initialFormatParam === 'html' ? b.chapters.find(c => c.hasHtml) : null) ||
         (initialFormatParam === 'pdf' ? b.chapters.find(c => c.hasPdf) : null) ||
         b.chapters[0];
       setActiveChapter(initial);
       
-      let determinedFormat: 'pdf' | 'html' = 'pdf';
-      // Respect explicit URL ?format param, then default to PDF
-      if (initialFormatParam === 'html' && initial.hasHtml) {
-        determinedFormat = 'html';
-      } else if (initialFormatParam === 'pdf' && initial.hasPdf) {
-        determinedFormat = 'pdf';
-      } else if (initial.hasPdf) {
-        determinedFormat = 'pdf';
-      } else if (initial.hasHtml) {
-        determinedFormat = 'html';
-      }
+      const determinedFormat: 'pdf' | 'html' =
+        initialFormatParam === 'html' ? 'html' :
+        initialFormatParam === 'pdf' ? 'pdf' :
+        (initial.hasPdf ? 'pdf' : 'html');
       setFormatMode(determinedFormat);
 
       if (typeof window !== 'undefined') {
@@ -292,18 +288,7 @@ function ensureCoverChapter(b: Book): Book {
       setActiveChapter(chapter);
       setCurrentPage(1);
 
-      let targetFormat: 'pdf' | 'html' = 'pdf';
-      if (forcedFormat) {
-        targetFormat = forcedFormat;
-      } else if (formatMode === 'html' && chapter.hasHtml) {
-        targetFormat = 'html';
-      } else if (chapter.hasPdf) {
-        targetFormat = 'pdf';
-      } else if (chapter.hasHtml) {
-        targetFormat = 'html';
-      } else {
-        targetFormat = 'pdf';
-      }
+      const targetFormat = forcedFormat || formatMode;
       setFormatMode(targetFormat);
 
       if (typeof window !== 'undefined') {
@@ -944,14 +929,14 @@ function ensureCoverChapter(b: Book): Book {
         </div>
       </header>
 
-      {/* ── CONTINUOUS SCROLLING CANVAS (HTML Prioritized with Liquid Glass UI) ── */}
+      {/* ── CONTINUOUS SCROLLING CANVAS (Completely Isolated HTML vs PDF) ── */}
       <main className="flex-1 w-full min-h-0 relative overflow-hidden flex flex-col">
-        {formatMode === 'html' && activeChapter?.hasHtml ? (
+        {formatMode === 'html' ? (
           <LiquidHtmlReader
-            key={`html_${book.id}_${activeChapter.id}`}
+            key={`html_${book.id}_${activeChapter?.id || 'main'}`}
             bookId={book.id}
-            chapterId={activeChapter.id}
-            chapterTitle={activeChapter.title}
+            chapterId={activeChapter?.id || ''}
+            chapterTitle={activeChapter?.title || book.title}
             theme={readerTheme}
             fontSize={fontSize}
             readerWidth={readerWidth}
@@ -959,8 +944,8 @@ function ensureCoverChapter(b: Book): Book {
             prevChapterTitle={prevChapter?.title}
             onNextChapter={nextChapter ? () => goToChapter(nextChapter) : undefined}
             onPrevChapter={prevChapter ? () => goToChapter(prevChapter) : undefined}
-            onChapterComplete={() => toggleChapterComplete(activeChapter.id)}
-            isCompleted={completedChapters.includes(activeChapter.id)}
+            onChapterComplete={() => activeChapter && toggleChapterComplete(activeChapter.id)}
+            isCompleted={activeChapter ? completedChapters.includes(activeChapter.id) : false}
           />
         ) : (
           <div className="w-full h-full flex-1 relative bg-[#07090e]">

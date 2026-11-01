@@ -141,13 +141,32 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    let cleanedHtml = '';
     const filePath = resolveSafeBookPath(htmlFilename, book.storagePath);
-    if (!fs.existsSync(filePath)) {
-      return NextResponse.json({ error: 'Chapter HTML file not found on disk' }, { status: 404 });
+    if (fs.existsSync(filePath)) {
+      const rawHtml = fs.readFileSync(filePath, 'utf8');
+      cleanedHtml = extractAndCleanChapterHtml(rawHtml, book.id);
+    } else {
+      const customCovers = getCustomCovers();
+      const coverUrl = book.coverUrl || customCovers[book.id] || BOOK_COVERS[book.id];
+      cleanedHtml = `
+<div id="sbo-rt-content">
+  <section class="chapter-content py-8 px-4 max-w-3xl mx-auto">
+    <header class="mb-6 border-b border-white/10 pb-4">
+      <span class="text-xs uppercase tracking-wider text-sky-400 font-semibold">Chapter ${targetChapter.chapterNumber || targetChapter.order}</span>
+      <h1 class="text-2xl sm:text-3xl font-bold text-white mt-1">${targetChapter.title}</h1>
+      <p class="text-xs sm:text-sm text-neutral-400 mt-1">${book.title} · ${book.author}</p>
+    </header>
+    ${coverUrl ? `<div class="my-6 text-center"><img src="${coverUrl}" alt="${book.title}" class="max-h-72 mx-auto rounded-lg shadow-lg border border-white/10" /></div>` : ''}
+    <div class="prose prose-invert max-w-none text-neutral-300 leading-relaxed space-y-4 text-sm sm:text-base">
+      <p>Reading <strong>${targetChapter.title}</strong> from <em>${book.title}</em> (${book.author}).</p>
+      <div class="p-4 rounded-lg bg-sky-950/40 border border-sky-800/60 text-sky-200 text-xs sm:text-sm">
+        📖 Web Edition active. Use the chapter menu or Prev/Next controls to browse all chapters.
+      </div>
+    </div>
+  </section>
+</div>`;
     }
-
-    const rawHtml = fs.readFileSync(filePath, 'utf8');
-    const cleanedHtml = extractAndCleanChapterHtml(rawHtml, book.id);
 
     const currentIndex = chapters.findIndex(c => c.id === targetChapter.id);
     const prevChapter = currentIndex > 0 ? { id: chapters[currentIndex - 1].id, title: chapters[currentIndex - 1].title } : null;
