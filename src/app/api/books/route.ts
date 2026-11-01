@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     // Attach coverUrl to books
     const enriched = allBooks.map(b => ({
       ...b,
-      coverUrl: customCovers[b.id] || BOOK_COVERS[b.id] || undefined,
+      coverUrl: customCovers[b.id] || b.coverUrl || BOOK_COVERS[b.id] || undefined,
     }));
 
     const result = searchAndFilterBooks(enriched, { q, tag, author, sort });

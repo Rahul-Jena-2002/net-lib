@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import type { Book } from '@/lib/types';
 import BookCard from '@/components/catalog/BookCard';
+import BookGridSkeleton from '@/components/common/BookGridSkeleton';
+import Footer from '@/components/layout/Footer';
 import UploadModal from '@/components/upload/UploadModal';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -23,8 +25,18 @@ export default function HomePage() {
 
   const [books, setBooks] = useState<Book[]>([]);
   const [query, setQuery] = useState('');
+  const [formatFilter, setFormatFilter] = useState<'all' | 'web' | 'pdf'>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [cols, setCols] = useState(6);
+
+  const webCount = useMemo(
+    () => books.filter(b => b.hasFullHtml || (b.htmlChaptersCount && b.htmlChaptersCount > 0)).length,
+    [books]
+  );
+  const pdfCount = useMemo(
+    () => books.filter(b => !b.isMultiChapter || b.filename || b.chapters?.some(c => c.hasPdf)).length,
+    [books]
+  );
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -65,25 +77,31 @@ export default function HomePage() {
   const fetchCatalog = async (force = false) => {
     try {
       if (force) setRefreshing(true);
-      const res = await fetch(`/api/books${force ? '?refresh=true' : ''}`);
-      if (res.ok) {
-        const data: Book[] = await res.json();
-        setBooks(data);
-        return;
+      else setLoading(true);
+
+      let loadedBooks: Book[] = [];
+      try {
+        const res = await fetch(`/api/books${force ? '?refresh=true' : ''}`);
+        if (res.ok) {
+          loadedBooks = await res.json();
+        }
+      } catch {
+        // ignore
       }
-    } catch {
-      // ignore
-    }
-    // Fallback to static bundled catalog on GitHub Pages
-    try {
-      const fallbackUrl = (process.env.NEXT_PUBLIC_BASE_PATH || '') + '/data/books.json';
-      const res = await fetch(fallbackUrl);
-      if (res.ok) {
-        const data: Book[] = await res.json();
-        setBooks(data);
+
+      if (!loadedBooks.length) {
+        try {
+          const fallbackUrl = (process.env.NEXT_PUBLIC_BASE_PATH || '') + '/data/books.json';
+          const res = await fetch(fallbackUrl);
+          if (res.ok) {
+            loadedBooks = await res.json();
+          }
+        } catch (err) {
+          console.error('Failed to load books catalog:', err);
+        }
       }
-    } catch (err) {
-      console.error('Failed to load books catalog:', err);
+
+      setBooks(loadedBooks);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -160,13 +178,19 @@ export default function HomePage() {
       result = scored.map(s => s.book);
     }
 
-    return result;
-  }, [books, query]);
+    if (formatFilter === 'web') {
+      result = result.filter(b => b.hasFullHtml || (b.htmlChaptersCount && b.htmlChaptersCount > 0));
+    } else if (formatFilter === 'pdf') {
+      result = result.filter(b => !b.isMultiChapter || b.filename || b.chapters?.some(c => c.hasPdf));
+    }
 
-  // Reset page when query changes
+    return result;
+  }, [books, query, formatFilter]);
+
+  // Reset page when query or format filter changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [query]);
+  }, [query, formatFilter]);
 
   // Pagination for exactly 2 rows of books
   const totalPagesCount = Math.max(1, Math.ceil(filteredBooks.length / booksPerPage));
@@ -176,78 +200,68 @@ export default function HomePage() {
   }, [filteredBooks, currentPage, booksPerPage]);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans relative selection:bg-white/20 selection:text-white">
-      {/* Ambient Optical Background Lighting */}
-      <div className="ambient-optical-canvas">
-        <div className="ambient-light-orb-1" />
-        <div className="ambient-light-orb-2" />
-      </div>
-
-      {/* Subtle top edge fade for smooth scroll occlusion */}
-      <div className="fixed top-0 left-0 right-0 h-4 bg-gradient-to-b from-[var(--canvas-bg)] to-transparent pointer-events-none z-40" />
-
-      {/* ── PINNED FLOATING APPLE LIQUID GLASS TOP NAVBAR (Fixed on Scroll) ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 pt-3 sm:pt-3.5 pb-2 px-3 sm:px-6 md:px-8 w-full max-w-none pointer-events-none">
-        <div className="liquid-glass-nav rounded-full h-14 sm:h-15 px-3.5 sm:px-5 flex items-center justify-between gap-3 pointer-events-auto">
+    <div className="min-h-screen flex flex-col font-sans relative selection:bg-white/20 selection:text-white bg-[#0c1017]">
+      {/* ── TOP NAVBAR ── */}
+      <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-[#0c1017]/95 backdrop-blur-md px-4 sm:px-6 md:px-8 py-3">
+        <div className="w-full flex items-center justify-between gap-3">
           {/* Left: NetLib Brand Identity */}
           <Link
             href="/"
-            className="flex items-center gap-2 font-bold hover:opacity-90 transition shrink-0 group select-none"
+            className="flex items-center gap-2.5 hover:opacity-90 transition shrink-0 select-none"
           >
-            <div className="w-7 h-7 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-              <BookOpen className="w-4.5 h-4.5 text-sky-400 group-hover:text-sky-300 transition-colors" />
+            <div className="w-8 h-8 rounded bg-neutral-800 border border-neutral-700/60 flex items-center justify-center text-sky-400">
+              <BookOpen className="w-4.5 h-4.5" />
             </div>
             <div className="flex flex-col">
-              <span className="tracking-tight text-sm sm:text-base font-extrabold leading-tight">NetLib</span>
-              <span className="text-[9px] font-semibold opacity-40 tracking-wider hidden sm:block">LIBRARY</span>
+              <span className="tracking-tight text-sm sm:text-base font-bold leading-tight text-white">NetLib</span>
+              <span className="text-[10px] font-medium text-neutral-400 tracking-wider hidden sm:block">DIGITAL LIBRARY</span>
             </div>
           </Link>
 
-          {/* Center: Apple Spotlight-Grade Search Bar (Chromeless & Transparent) */}
-          <div className="flex-1 max-w-xs sm:max-w-md lg:max-w-lg mx-1 sm:mx-4 relative flex items-center group">
-            <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 absolute left-3 opacity-40 group-focus-within:opacity-100 group-focus-within:text-sky-400 transition-all pointer-events-none" />
+          {/* Center: Search Bar */}
+          <div className="flex-1 max-w-xs sm:max-w-md lg:max-w-lg mx-1 sm:mx-4 relative flex items-center">
+            <Search className="w-4 h-4 absolute left-3 text-neutral-400 pointer-events-none" />
             <input
               ref={searchInputRef}
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search books, authors, topics..."
-              className="w-full pl-8 sm:pl-9 pr-12 sm:pr-14 py-2 bg-transparent border-0 outline-none text-xs sm:text-sm font-normal text-inherit placeholder:text-inherit placeholder:opacity-40 focus:placeholder:opacity-20 transition-all shadow-none"
+              className="w-full pl-9 pr-12 py-1.5 sm:py-2 bg-neutral-900/90 border border-neutral-700/70 focus:border-neutral-500 rounded-lg outline-none text-xs sm:text-sm text-neutral-200 placeholder:text-neutral-500 transition-colors"
             />
             {query ? (
               <button
                 onClick={() => setQuery('')}
-                className="absolute right-2 p-1 rounded-full hover:bg-white/10 opacity-60 hover:opacity-100 transition"
+                className="absolute right-2 p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
                 title="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             ) : (
               <div className="absolute right-2.5 hidden sm:flex items-center gap-1 pointer-events-none select-none">
-                <kbd className="text-[10px] font-mono font-medium opacity-40">
+                <kbd className="text-[10px] font-mono px-1 py-0.5 rounded bg-neutral-800 text-neutral-400 border border-neutral-700/50">
                   ⌘K
                 </kbd>
               </div>
             )}
           </div>
 
-          {/* Right: Refined Action Controls (Transparent & Sleek) */}
-          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-
+          {/* Right: Rescan & Add Book Action Controls */}
+          <div className="flex items-center gap-2 shrink-0">
             {/* Rescan / Sync Button */}
             <button
               onClick={() => fetchCatalog(true)}
               disabled={refreshing}
-              className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full flex items-center justify-center text-xs opacity-75 hover:opacity-100 hover:bg-white/[0.08] disabled:opacity-30 active:scale-95 transition"
+              className="w-8 h-8 rounded-lg border border-neutral-700/60 bg-neutral-900/80 flex items-center justify-center text-neutral-300 hover:text-white hover:bg-neutral-800 disabled:opacity-40 transition-colors"
               title="Rescan library"
             >
               <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${refreshing ? 'animate-spin' : ''}`} />
             </button>
 
-            {/* Add Book Button (Opens Floating Apple Liquid Glass Menu) */}
+            {/* Add Book Button */}
             <button
               onClick={() => setIsUploadOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold opacity-85 hover:opacity-100 hover:bg-white/[0.08] active:scale-95 transition cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 transition-colors cursor-pointer"
               title="Upload new publication"
             >
               <Upload className="w-3.5 h-3.5 text-sky-400" />
@@ -257,24 +271,124 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* ── COMPACT 2-ROW BOOK SHOWCASE GRID (Fits on Screen) ── */}
-      <main className="w-full max-w-none px-4 sm:px-6 md:px-8 pt-20 sm:pt-24 pb-4 flex-1 relative z-10 flex flex-col justify-between">
-        {loading ? (
-          <div className="py-24 text-center opacity-60 text-sm">
-            Loading library books...
-          </div>
-        ) : filteredBooks.length === 0 ? (
-          <div className="py-20 text-center max-w-md mx-auto liquid-glass rounded-2xl p-8 my-auto">
-            <h3 className="text-base font-bold mb-1">No books found</h3>
-            <p className="opacity-70 text-xs mb-4">
-              We couldn't find matches for "{query}". Try searching with terms like "Java" or "Microservices".
-            </p>
+      {/* ── MAIN BOOK SHOWCASE GRID ── */}
+      <main className="w-full max-w-none px-4 sm:px-6 md:px-8 pt-6 pb-8 flex-1 relative z-10 flex flex-col justify-between">
+        {/* ── FORMAT FILTER BAR ── */}
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-5 select-none">
+          {/* Unified Filter Pills */}
+          <div className="inline-flex items-center p-0.5 rounded-lg bg-neutral-900/90 border border-neutral-800">
             <button
-              onClick={() => setQuery('')}
-              className="px-4 py-2 rounded-full liquid-glass-pill text-xs font-semibold"
+              onClick={() => setFormatFilter('all')}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-colors cursor-pointer ${
+                formatFilter === 'all'
+                  ? 'bg-neutral-800 text-white shadow-sm'
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
+              }`}
             >
-              Reset Search
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>All Editions</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
+                  formatFilter === 'all'
+                    ? 'bg-neutral-700 text-neutral-100'
+                    : 'bg-neutral-800 text-neutral-400'
+                }`}
+              >
+                {books.length}
+              </span>
             </button>
+
+            <button
+              onClick={() => setFormatFilter('web')}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-colors cursor-pointer ${
+                formatFilter === 'web'
+                  ? 'bg-neutral-800 text-white shadow-sm'
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
+              }`}
+              title="Show Web edition books only"
+            >
+              <span>Web Version</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
+                  formatFilter === 'web'
+                    ? 'bg-neutral-700 text-neutral-100'
+                    : 'bg-neutral-800 text-neutral-400'
+                }`}
+              >
+                {webCount}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setFormatFilter('pdf')}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium flex items-center gap-2 transition-colors cursor-pointer ${
+                formatFilter === 'pdf'
+                  ? 'bg-neutral-800 text-white shadow-sm'
+                  : 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/50'
+              }`}
+              title="Show PDF edition books only"
+            >
+              <span>PDF Version</span>
+              <span
+                className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${
+                  formatFilter === 'pdf'
+                    ? 'bg-neutral-700 text-neutral-100'
+                    : 'bg-neutral-800 text-neutral-400'
+                }`}
+              >
+                {pdfCount}
+              </span>
+            </button>
+          </div>
+
+          {/* Filter Status & Reset Action */}
+          <div className="flex items-center gap-3 text-xs">
+            {formatFilter !== 'all' && (
+              <button
+                onClick={() => setFormatFilter('all')}
+                className="text-[11px] font-medium text-sky-400 hover:text-sky-300 flex items-center gap-1 hover:underline transition cursor-pointer"
+              >
+                <span>Reset filter</span>
+                <X className="w-3 h-3" />
+              </button>
+            )}
+            <span className="text-[11px] text-neutral-400">
+              Showing {filteredBooks.length} of {books.length} books
+            </span>
+          </div>
+        </div>
+
+        {/* Catalog Body with Proper Skeleton Loader (Tell #28) */}
+        {loading ? (
+          <BookGridSkeleton count={booksPerPage} />
+        ) : filteredBooks.length === 0 ? (
+          <div className="py-16 text-center max-w-md mx-auto bg-[#131822] border border-white/10 rounded-xl p-8 my-auto">
+            <h3 className="text-base font-bold mb-1 text-white">No books found</h3>
+            <p className="text-neutral-400 text-xs mb-4">
+              {formatFilter !== 'all'
+                ? `No ${formatFilter === 'web' ? 'Web' : 'PDF'} editions found${
+                    query ? ` matching "${query}"` : ''
+                  }.`
+                : `We could not find matches for "${query}". Try searching with terms like "Java" or "Architecture".`}
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              {formatFilter !== 'all' && (
+                <button
+                  onClick={() => setFormatFilter('all')}
+                  className="px-4 py-2 rounded-lg bg-white text-slate-950 font-bold text-xs transition hover:bg-neutral-200 cursor-pointer"
+                >
+                  Show All Formats ({books.length})
+                </button>
+              )}
+              {query && (
+                <button
+                  onClick={() => setQuery('')}
+                  className="px-4 py-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 text-xs font-medium cursor-pointer transition-colors"
+                >
+                  Clear Search
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-6 gap-4 sm:gap-5 lg:gap-6">
@@ -284,12 +398,11 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ── APPLE LIQUID GLASS 2-ROW PAGINATION BAR ── */}
+        {/* ── PAGINATION BAR ── */}
         {!loading && totalPagesCount > 1 && (
-          <div className="mt-5 mb-1 flex items-center justify-between border-t border-white/[0.08] pt-3 select-none">
-            <span className="text-[11px] opacity-60">
-              Showing {(currentPage - 1) * booksPerPage + 1}–
-              {Math.min(currentPage * booksPerPage, filteredBooks.length)} of {filteredBooks.length} books
+          <div className="mt-8 mb-2 flex items-center justify-between border-t border-white/[0.08] pt-4 select-none">
+            <span className="text-[11px] text-neutral-400">
+              Showing {(currentPage - 1) * booksPerPage + 1} to {Math.min(currentPage * booksPerPage, filteredBooks.length)} of {filteredBooks.length} books
             </span>
 
             {/* Pagination Controls */}
@@ -297,7 +410,7 @@ export default function HomePage() {
               <button
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                className="liquid-glass-pill px-3 py-1 rounded-full text-xs font-medium disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1"
+                className="px-3 py-1 rounded-md text-xs font-medium text-neutral-300 hover:text-white bg-neutral-900 border border-neutral-700/60 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-colors"
               >
                 <ChevronLeft className="w-3.5 h-3.5" />
                 <span>Prev</span>
@@ -308,10 +421,10 @@ export default function HomePage() {
                   <button
                     key={pageNumber}
                     onClick={() => setCurrentPage(pageNumber)}
-                    className={`w-7 h-7 rounded-full text-xs font-bold transition ${
+                    className={`w-7 h-7 rounded-md text-xs font-medium transition-colors ${
                       currentPage === pageNumber
-                        ? 'liquid-glass shadow-md scale-105'
-                        : 'opacity-60 hover:opacity-100 hover:bg-white/[0.08]'
+                        ? 'bg-neutral-700 text-white font-bold'
+                        : 'text-neutral-400 hover:text-white hover:bg-neutral-800'
                     }`}
                   >
                     {pageNumber}
@@ -322,7 +435,7 @@ export default function HomePage() {
               <button
                 disabled={currentPage === totalPagesCount}
                 onClick={() => setCurrentPage(p => Math.min(totalPagesCount, p + 1))}
-                className="liquid-glass-pill px-3 py-1 rounded-full text-xs font-medium disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1"
+                className="px-3 py-1 rounded-md text-xs font-medium text-neutral-300 hover:text-white bg-neutral-900 border border-neutral-700/60 disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1 transition-colors"
               >
                 <span>Next</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -332,12 +445,15 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* Floating Apple Liquid Glass Upload Modal */}
+      {/* Upload Modal */}
       <UploadModal
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         onSuccess={() => fetchCatalog(true)}
       />
+
+      {/* Footer (Terms of Service, Privacy Policy) */}
+      <Footer />
     </div>
   );
 }

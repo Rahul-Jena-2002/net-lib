@@ -9,6 +9,7 @@ const nextConfig = {
         output: 'export',
         basePath: '/net-lib',
         assetPrefix: '/net-lib/',
+        trailingSlash: true,
         images: { unoptimized: true },
       }
     : {}),

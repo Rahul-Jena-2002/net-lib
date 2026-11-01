@@ -16,91 +16,130 @@ export default function BookCard({ book }: BookCardProps) {
 
   const chapterCount = book.chapters?.length || 0;
   const isMulti = book.isMultiChapter;
-  const firstChapterId = book.chapters?.[0]?.id;
 
-  const readUrl = isMulti && firstChapterId
-    ? `/books/${book.id}/read?chapter=${encodeURIComponent(firstChapterId)}`
-    : `/books/${book.id}/read`;
+  const hasWeb = Boolean(book.hasFullHtml || (book.htmlChaptersCount && book.htmlChaptersCount > 0));
+  const hasPdf = Boolean(!book.isMultiChapter || book.filename || book.chapters?.some(c => c.hasPdf));
+
+  const firstHtmlChapter = book.chapters?.find(c => c.hasHtml) || book.chapters?.[0];
+  const firstPdfChapter = book.chapters?.find(c => c.hasPdf) || book.chapters?.[0];
+
+  const webUrl = isMulti && firstHtmlChapter
+    ? `/books/${book.id}/read?chapter=${encodeURIComponent(firstHtmlChapter.id)}&format=html`
+    : `/books/${book.id}/read?format=html`;
+
+  const pdfUrl = isMulti && firstPdfChapter
+    ? `/books/${book.id}/read?chapter=${encodeURIComponent(firstPdfChapter.id)}&format=pdf`
+    : `/books/${book.id}/read?format=pdf`;
 
   return (
-    <div className="group relative flex flex-col liquid-glass rounded-xl sm:rounded-2xl p-2 sm:p-2.5 transition-all duration-300 hover:scale-[1.02] hover:-translate-y-1">
-      {/* Book Cover Frame (Slightly Reduced Height aspect-[3/4] with Glass Bezel) */}
+    <div className="group relative flex flex-col bg-[#131822] hover:bg-[#171e2c] border border-white/[0.08] hover:border-white/20 rounded-lg p-2.5 transition-colors duration-150">
+      {/* Book Cover Frame */}
       <Link
         href={`/books/${book.id}`}
-        className="block relative aspect-[3/4] w-full rounded-lg sm:rounded-xl overflow-hidden mb-1.5 bg-[#05070e] border border-white/10 flex items-center justify-center p-1 transition-all duration-300"
+        className="block relative aspect-[4/4.5] w-full rounded-md overflow-hidden mb-2 bg-[#0a0d14] border border-white/10 flex items-center justify-center p-1 shrink-0"
       >
+        {/* Cover Format Badges: PDF prioritized as default */}
+        <div className="absolute top-1.5 right-1.5 z-10 flex items-center gap-1">
+          {hasPdf && (
+            <span className="px-1.5 py-0.5 rounded text-[8.5px] font-semibold tracking-wide bg-sky-950/90 text-sky-200 border border-sky-800/60">
+              PDF
+            </span>
+          )}
+          {hasWeb && (
+            <span className="px-1.5 py-0.5 rounded text-[8.5px] font-semibold tracking-wide bg-neutral-900/90 text-neutral-300 border border-neutral-700/70">
+              HTML
+            </span>
+          )}
+        </div>
+
         {coverUrl && !imageError ? (
           <img
             src={coverUrl}
             alt={book.title}
             onError={() => setImageError(true)}
-            className="w-full h-full object-contain rounded-md transition-transform duration-300 group-hover:scale-[1.02]"
+            className="w-full h-full object-contain rounded"
             loading="lazy"
           />
         ) : (
-          /* Elegant Apple-style typography cover fallback */
-          <div className="w-full h-full p-2.5 flex flex-col justify-between bg-gradient-to-br from-slate-800 to-slate-950 relative overflow-hidden select-none">
-            <div className="absolute inset-y-0 left-0 w-1.5 bg-white/[0.08] border-r border-white/10" />
-
-            <div className="pl-1">
-              <span className="text-[8px] tracking-wider uppercase font-semibold opacity-70">
+          /* Book spine / typographic cover */
+          <div className="w-full h-full p-2.5 flex flex-col justify-between bg-[#181f2a] border border-neutral-700/50 rounded select-none">
+            <div>
+              <span className="text-[8px] tracking-wider uppercase font-semibold text-neutral-400">
                 {book.edition || (isMulti ? 'Volume' : 'Guide')}
               </span>
             </div>
 
-            <div className="pl-1">
-              <h3 className="font-bold text-[11px] leading-snug line-clamp-2 mb-0.5">
+            <div>
+              <h3 className="font-bold text-[11px] leading-tight line-clamp-2 text-neutral-100 mb-0.5">
                 {book.title}
               </h3>
-              <p className="opacity-70 text-[9px] font-medium truncate">
+              <p className="text-neutral-400 text-[9px] font-medium truncate">
                 {book.author}
               </p>
             </div>
 
-            <div className="pl-1 text-[8px] opacity-60 flex items-center justify-between border-t border-white/10 pt-1">
-              <span>{book.totalPages}p</span>
-              <span>{isMulti ? `${chapterCount}ch` : 'PDF'}</span>
+            <div className="text-[8px] text-neutral-400 flex items-center justify-between border-t border-neutral-700/60 pt-1">
+              <span>{book.totalPages} pages</span>
+              <span>{isMulti ? `${chapterCount} ch` : 'Standalone'}</span>
             </div>
           </div>
         )}
       </Link>
 
-      {/* Compact Book Information (Reduced Height) */}
+      {/* Compact Book Information */}
       <div className="flex-1 flex flex-col justify-between px-0.5">
-        <div className="mb-1">
+        <div className="mb-2">
           <Link href={`/books/${book.id}`}>
             <h3
-              className="font-semibold text-xs leading-tight line-clamp-1 hover:opacity-80 transition-opacity mb-0.5"
+              className="font-medium text-[12px] leading-snug line-clamp-1 hover:text-sky-300 transition-colors mb-0.5 text-neutral-100"
               title={book.title}
             >
               {book.title}
             </h3>
           </Link>
-          <p className="opacity-60 text-[10px] truncate mb-1 font-medium">
+          <p className="text-neutral-400 text-[10px] truncate mb-0.5 font-normal">
             {book.author}
           </p>
 
-          <div className="flex items-center justify-between text-[9px] opacity-50">
-            <span>{book.edition || (isMulti ? `${chapterCount} ch` : 'PDF')}</span>
-            <span>{book.totalPages} pgs</span>
+          <div className="flex items-center justify-between text-[9px] text-neutral-400">
+            <span>
+              {book.edition ? `${book.edition} · ` : ''}
+              {isMulti ? `${chapterCount} chapters` : 'Single file'}
+            </span>
           </div>
         </div>
 
-        {/* Sleek Minimal Transparent Action Buttons */}
-        <div className="flex items-center gap-1 pt-1.5 border-t border-white/[0.08]">
+        {/* Format Action Buttons: Clean, dignified editorial buttons */}
+        <div className="flex items-center gap-1.5 pt-2 border-t border-white/[0.08]">
           <Link
             href={`/books/${book.id}`}
-            className="flex-1 text-center py-1 px-1.5 rounded-full text-[10px] font-medium opacity-80 hover:opacity-100 hover:bg-white/[0.08] transition"
+            className="py-1 px-2 rounded text-[10px] font-medium text-neutral-300 hover:text-white hover:bg-white/[0.08] transition-colors text-center shrink-0 border border-white/10"
+            title="View Details & Chapters"
           >
-            Overview
+            Details
           </Link>
-          <Link
-            href={readUrl}
-            className="flex-1 flex items-center justify-center gap-1 py-1 px-1.5 rounded-full text-[10px] font-semibold text-sky-400 opacity-90 hover:opacity-100 hover:bg-white/[0.08] transition"
-          >
-            <span>Read</span>
-            <ArrowUpRight className="w-2.5 h-2.5 opacity-80" />
-          </Link>
+
+          <div className="flex-1 flex items-center justify-end gap-1">
+            {hasPdf && (
+              <Link
+                href={pdfUrl}
+                className="flex-1 flex items-center justify-center py-1 px-2 rounded text-[10px] font-medium bg-sky-600 hover:bg-sky-500 text-white border border-sky-500/80 transition-colors text-center"
+                title="Read PDF Edition (Default)"
+              >
+                PDF
+              </Link>
+            )}
+
+            {hasWeb && (
+              <Link
+                href={webUrl}
+                className="flex-1 flex items-center justify-center py-1 px-2 rounded text-[10px] font-medium bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 transition-colors text-center"
+                title="Read Web HTML"
+              >
+                HTML
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -152,7 +152,7 @@ export default function UploadModal({ isOpen, onClose, onSuccess }: UploadModalP
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/65 backdrop-blur-xl animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-sm"
       onClick={e => {
         if (e.target === e.currentTarget && status !== 'uploading') {
           onClose();
@@ -161,24 +161,24 @@ export default function UploadModal({ isOpen, onClose, onSuccess }: UploadModalP
     >
       <div
         ref={modalRef}
-        className="w-full max-w-lg liquid-glass-modal rounded-3xl p-6 sm:p-7 relative overflow-hidden text-inherit select-none shadow-none animate-in zoom-in-95 duration-200"
+        className="w-full max-w-lg bg-[#131822] border border-white/10 rounded-xl p-6 sm:p-7 relative text-inherit shadow-lg"
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-4 border-b border-white/[0.08] mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/[0.06] border border-white/[0.12] flex items-center justify-center shrink-0">
-              <Upload className="w-5 h-5 text-sky-400" />
+            <div className="w-9 h-9 rounded-lg bg-neutral-800 border border-neutral-700 flex items-center justify-center shrink-0">
+              <Upload className="w-4.5 h-4.5 text-sky-400" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold leading-tight">Add Publication</h2>
-              <p className="text-[11px] opacity-60">Upload a PDF directly to your NetLib library</p>
+              <h2 className="text-base sm:text-lg font-bold leading-tight text-white">Add Publication</h2>
+              <p className="text-[11px] text-neutral-400">Upload a PDF directly to your library collection</p>
             </div>
           </div>
 
           <button
             onClick={onClose}
             disabled={status === 'uploading'}
-            className="p-1.5 rounded-full hover:bg-white/10 opacity-70 hover:opacity-100 transition disabled:opacity-30"
+            className="p-1.5 rounded-md hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors disabled:opacity-30"
             title="Close (Esc)"
           >
             <X className="w-4 h-4" />
@@ -188,11 +188,11 @@ export default function UploadModal({ isOpen, onClose, onSuccess }: UploadModalP
         {/* Success View */}
         {status === 'success' ? (
           <div className="py-8 text-center flex flex-col items-center justify-center gap-3">
-            <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center text-emerald-400">
-              <CheckCircle2 className="w-8 h-8" />
+            <div className="w-12 h-12 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <CheckCircle2 className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-emerald-400">Publication Added!</h3>
-            <p className="text-xs opacity-70 max-w-xs">{message}</p>
+            <h3 className="text-base font-bold text-white">Publication Added</h3>
+            <p className="text-xs text-neutral-400 max-w-xs">{message}</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -202,22 +202,22 @@ export default function UploadModal({ isOpen, onClose, onSuccess }: UploadModalP
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               onClick={() => fileRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all ${
+              className={`border border-dashed rounded-lg p-5 text-center cursor-pointer transition-colors ${
                 isDragging
                   ? 'border-sky-400 bg-sky-500/10'
                   : file
-                  ? 'border-emerald-400/40 bg-emerald-500/[0.04]'
-                  : 'border-white/15 hover:border-white/30 bg-white/[0.02] hover:bg-white/[0.05]'
+                  ? 'border-emerald-500/40 bg-emerald-500/[0.04]'
+                  : 'border-neutral-700 hover:border-neutral-500 bg-neutral-900/60 hover:bg-neutral-900'
               }`}
             >
               {file ? (
                 <div className="flex items-center justify-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center text-emerald-400 shrink-0">
-                    <FileText className="w-5 h-5" />
+                  <div className="w-8 h-8 rounded bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                    <FileText className="w-4 h-4" />
                   </div>
                   <div className="text-left min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-emerald-400 truncate">{file.name}</p>
-                    <p className="text-[10px] opacity-60">{(file.size / (1024 * 1024)).toFixed(1)} MB · Ready to upload</p>
+                    <p className="text-xs font-semibold text-emerald-300 truncate">{file.name}</p>
+                    <p className="text-[10px] text-neutral-400">{(file.size / (1024 * 1024)).toFixed(1)} MB · Ready to upload</p>
                   </div>
                   <button
                     type="button"
@@ -226,16 +226,16 @@ export default function UploadModal({ isOpen, onClose, onSuccess }: UploadModalP
                       setFile(null);
                       if (fileRef.current) fileRef.current.value = '';
                     }}
-                    className="p-1 rounded-full hover:bg-white/10 opacity-60 hover:opacity-100 transition"
+                    className="p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
               ) : (
                 <>
-                  <Upload className="w-6 h-6 mx-auto mb-1.5 text-sky-400 opacity-80" />
-                  <p className="text-xs font-medium">Drag & drop your PDF or click to browse</p>
-                  <p className="opacity-40 text-[10px] mt-0.5">Supports single book and multi-chapter PDFs</p>
+                  <Upload className="w-5 h-5 mx-auto mb-1.5 text-sky-400" />
+                  <p className="text-xs font-medium text-neutral-200">Drag & drop your PDF or click to browse</p>
+                  <p className="text-neutral-500 text-[10px] mt-0.5">Supports single book and multi-chapter PDFs</p>
                 </>
               )}
               <input
@@ -249,31 +249,31 @@ export default function UploadModal({ isOpen, onClose, onSuccess }: UploadModalP
 
             {/* Custom Book Title */}
             <div>
-              <label className="block text-xs font-medium opacity-80 mb-1">
-                Book Title <span className="opacity-40 text-[10px] font-normal">(optional)</span>
+              <label className="block text-xs font-medium text-neutral-300 mb-1">
+                Book Title <span className="text-neutral-500 text-[10px] font-normal">(optional)</span>
               </label>
               <input
                 type="text"
                 placeholder="Leave blank to use filename or PDF title"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl bg-white/[0.05] border border-white/[0.09] text-inherit text-xs placeholder:opacity-40 focus:outline-none focus:border-sky-400/50 transition"
+                className="w-full px-3 py-2 rounded-lg bg-neutral-900/90 border border-neutral-700/80 text-neutral-200 text-xs placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition-colors"
               />
             </div>
 
             {/* Cover Page Link with Live Preview */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-medium opacity-80 flex items-center gap-1.5">
-                  <ImageIcon className="w-3.5 h-3.5 opacity-60" />
+                <label className="text-xs font-medium text-neutral-300 flex items-center gap-1.5">
+                  <ImageIcon className="w-3.5 h-3.5 text-neutral-400" />
                   <span>Cover Page Link</span>
-                  <span className="opacity-40 text-[10px] font-normal">(optional)</span>
+                  <span className="text-neutral-500 text-[10px] font-normal">(optional)</span>
                 </label>
-                <span className="text-[9px] opacity-40 font-mono">Image URL (.jpg, .png, .webp)</span>
+                <span className="text-[9px] text-neutral-500 font-mono">Image URL (.jpg, .png, .webp)</span>
               </div>
 
               <div className="relative flex items-center">
-                <LinkIcon className="w-3.5 h-3.5 absolute left-3 opacity-40 pointer-events-none" />
+                <LinkIcon className="w-3.5 h-3.5 absolute left-3 text-neutral-500 pointer-events-none" />
                 <input
                   type="url"
                   placeholder="https://... direct cover image URL"
@@ -282,7 +282,7 @@ export default function UploadModal({ isOpen, onClose, onSuccess }: UploadModalP
                     setCoverUrl(e.target.value);
                     setImageError(false);
                   }}
-                  className="w-full pl-8 pr-8 py-2 rounded-xl bg-white/[0.05] border border-white/[0.09] text-inherit text-xs placeholder:opacity-40 focus:outline-none focus:border-sky-400/50 transition font-mono text-[11px]"
+                  className="w-full pl-8 pr-8 py-2 rounded-lg bg-neutral-900/90 border border-neutral-700/80 text-neutral-200 text-xs placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition-colors font-mono text-[11px]"
                 />
                 {coverUrl && (
                   <button
@@ -291,17 +291,17 @@ export default function UploadModal({ isOpen, onClose, onSuccess }: UploadModalP
                       setCoverUrl('');
                       setImageError(false);
                     }}
-                    className="absolute right-2.5 p-1 rounded-full hover:bg-white/10 opacity-60 hover:opacity-100 transition"
+                    className="absolute right-2.5 p-1 rounded hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
                   >
                     <X className="w-3 h-3" />
                   </button>
                 )}
               </div>
 
-              {/* Real-time Cover Image Preview Card */}
+              {/* Cover Image Preview Card */}
               {coverUrl.trim() && (
-                <div className="mt-2.5 p-2 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center gap-3">
-                  <div className="w-12 h-16 rounded-lg bg-black/40 border border-white/10 overflow-hidden flex items-center justify-center shrink-0 relative">
+                <div className="mt-2.5 p-2 rounded-lg bg-neutral-900/80 border border-neutral-800 flex items-center gap-3">
+                  <div className="w-12 h-16 rounded bg-black/40 border border-neutral-700 overflow-hidden flex items-center justify-center shrink-0 relative">
                     {!imageError ? (
                       <img
                         src={coverUrl.trim()}
@@ -314,12 +314,12 @@ export default function UploadModal({ isOpen, onClose, onSuccess }: UploadModalP
                     )}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-semibold text-slate-200">
+                    <p className="text-[11px] font-medium text-neutral-200">
                       {!imageError ? 'Cover Preview Valid' : 'Image URL Unreachable'}
                     </p>
-                    <p className="text-[10px] opacity-50 truncate mt-0.5">
+                    <p className="text-[10px] text-neutral-400 truncate mt-0.5">
                       {!imageError
-                        ? 'This artwork will be displayed in your library catalog'
+                        ? 'Artwork will be displayed in library catalog'
                         : 'Verify direct image link or use another URL'}
                     </p>
                   </div>
@@ -329,7 +329,7 @@ export default function UploadModal({ isOpen, onClose, onSuccess }: UploadModalP
 
             {/* Error Message */}
             {status === 'error' && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs flex items-center gap-2">
+              <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/25 text-rose-300 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{message}</span>
               </div>
@@ -341,7 +341,7 @@ export default function UploadModal({ isOpen, onClose, onSuccess }: UploadModalP
                 type="button"
                 onClick={onClose}
                 disabled={status === 'uploading'}
-                className="px-3.5 py-2 rounded-full text-xs font-semibold hover:bg-white/[0.08] opacity-75 hover:opacity-100 transition disabled:opacity-30"
+                className="px-3.5 py-1.5 rounded-lg text-xs font-medium text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors disabled:opacity-30"
               >
                 Cancel
               </button>
@@ -349,7 +349,7 @@ export default function UploadModal({ isOpen, onClose, onSuccess }: UploadModalP
               <button
                 type="submit"
                 disabled={!file || status === 'uploading'}
-                className="px-5 py-2 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 hover:from-sky-400 hover:to-indigo-400 text-white text-xs font-bold transition disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shadow-none"
+                className="px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
               >
                 {status === 'uploading' ? (
                   <>

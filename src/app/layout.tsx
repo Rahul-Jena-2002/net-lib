@@ -3,8 +3,8 @@ import './globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
 
 export const metadata: Metadata = {
-  title: 'NetLib — Your Digital Library',
-  description: 'Browse and read your book collection',
+  title: 'NetLib | Digital Library & PDF Reader',
+  description: 'Browse and read your book collection in clean web and PDF formats',
 };
 
 export const viewport: Viewport = {

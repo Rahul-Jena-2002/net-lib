@@ -72,6 +72,25 @@ export const BOOK_COVERS: Record<string, string> = {
     'https://covers.openlibrary.org/b/id/7505404-L.jpg',
   'the-well-grounded-java-developer-second-edition-by-jason-clark-martijn-verburg-benjamin-evans':
     'https://covers.openlibrary.org/b/id/7505404-L.jpg',
+
+  // Additional Catalog Books
+  'cloud-native-spring-in-action-by-thomas-vitale':
+    'https://covers.openlibrary.org/b/id/12838383-L.jpg',
+  'spring-boot-up-and-running-en-by-mark-heckler':
+    'https://covers.openlibrary.org/b/id/10573932-L.jpg',
+
+  'learning-git-by-anna-skoulikari':
+    'https://covers.openlibrary.org/b/id/12845688-L.jpg',
+  'java-cookbook-5th-edition-en-by-ian-f-darwin':
+    'https://covers.openlibrary.org/b/id/14589945-L.jpg',
+  'learning-sql-3rd-edition-en-by-alan-beaulieu':
+    'https://covers.openlibrary.org/b/id/10427301-L.jpg',
+  'designing-distributed-systems-2nd-edition-en-by-brendan-burns':
+    'https://covers.openlibrary.org/b/id/12543900-L.jpg',
+  'effective-java-3rd-edition-by-joshua-bloch':
+    'https://covers.openlibrary.org/b/id/8231996-L.jpg',
+  'llmops-abi-aryan':
+    'https://covers.openlibrary.org/b/id/14840847-L.jpg',
 };
 
 export function getBookCoverUrl(bookId: string, directCoverUrl?: string): string | null {

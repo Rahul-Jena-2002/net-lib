@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { scanBooks, BOOKS_ROOT, resolveSafeBookPath } from '@/lib/scanner';
 import { parseRange } from '@/lib/pdf';
+import { generateChapterPdfBytes } from '@/lib/pdfGenerator';
 import fs from 'fs';
 import path from 'path';
 import { Readable } from 'stream';
@@ -25,39 +26,76 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Book not found' }, { status: 404 });
   }
 
-  let subPath: string;
+  let subPath: string | null = null;
 
   if (book.chapters && chapterId) {
     const chapter = book.chapters.find(c => c.id === chapterId);
     if (!chapter) return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
-    subPath = path.join(book.folder!, chapter.filename);
-  } else if (book.filename) {
+    const pdfName = chapter.pdfFilename || (chapter.filename?.toLowerCase().endsWith('.pdf') ? chapter.filename : null);
+    if (pdfName) {
+      subPath = path.join(book.folder!, pdfName);
+    }
+  } else if (book.filename && book.filename.toLowerCase().endsWith('.pdf')) {
     subPath = book.filename;
   } else if (book.chapters && book.chapters.length > 0) {
-    // default to first chapter
-    const first = book.chapters[0];
-    subPath = path.join(book.folder!, first.filename);
-  } else {
-    return NextResponse.json({ error: 'No PDF found' }, { status: 404 });
-  }
-
-  let filePath: string;
-  try {
-    filePath = resolveSafeBookPath(subPath, BOOKS_ROOT);
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: 'Access Denied: Path traversal attempt detected' },
-      { status: 403 }
-    );
-  }
-
-  if (!fs.existsSync(filePath)) {
-    const fallbackSample = path.resolve(process.cwd(), 'public/sample.pdf');
-    if (fs.existsSync(fallbackSample)) {
-      filePath = fallbackSample;
-    } else {
-      return NextResponse.json({ error: `File not found on disk: ${filePath}` }, { status: 404 });
+    const firstPdf = book.chapters.find(c => c.pdfFilename || c.filename?.toLowerCase().endsWith('.pdf'));
+    if (firstPdf) {
+      const pdfName = firstPdf.pdfFilename || firstPdf.filename;
+      subPath = path.join(book.folder!, pdfName);
     }
+  }
+
+  let filePath: string | null = null;
+  if (subPath) {
+    try {
+      filePath = resolveSafeBookPath(subPath, BOOKS_ROOT);
+    } catch (err: any) {
+      return NextResponse.json(
+        { error: 'Access Denied: Path traversal attempt detected' },
+        { status: 403 }
+      );
+    }
+  }
+
+  if (!filePath || !fs.existsSync(filePath)) {
+    // Dynamically generate publication PDF for cloud deployment or HTML-only chapters
+    const targetChapter = book.chapters?.find(c => c.id === chapterId) || book.chapters?.[0];
+    const chTitle = targetChapter?.title || book.title;
+    const chNum = targetChapter?.chapterNumber || targetChapter?.order || 1;
+    const pages = targetChapter?.pageCount ? Math.min(Math.max(targetChapter.pageCount, 3), 6) : 3;
+    const pdfBytes = generateChapterPdfBytes(book.title, chTitle, chNum, book.author, pages);
+
+    const rangeHeader = req.headers.get('range');
+    const fileSize = pdfBytes.length;
+
+    if (rangeHeader) {
+      const range = parseRange(rangeHeader, fileSize);
+      if (range.valid) {
+        const { start, end } = range;
+        const slice = pdfBytes.subarray(start, end + 1);
+        return new NextResponse(slice as any, {
+          status: 206,
+          headers: {
+            'Content-Type': 'application/pdf',
+            'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': slice.length.toString(),
+            'Content-Disposition': 'inline',
+          },
+        });
+      }
+    }
+
+    return new NextResponse(pdfBytes as any, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Length': fileSize.toString(),
+        'Accept-Ranges': 'bytes',
+        'Content-Disposition': 'inline',
+        'Cache-Control': 'public, max-age=3600',
+      },
+    });
   }
 
   const stat = fs.statSync(filePath);

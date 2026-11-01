@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { execFileSync } from 'child_process';
 import type { Book, Chapter } from './types';
+import { BOOK_COVERS } from './covers.ts';
 
 /**
  * Deterministically resolve the Books storage root directory.
@@ -206,7 +207,7 @@ export function getChapterSortKey(
   folderName: string
 ): { priority: number; number: number; title: string } {
   const clean = normalizeString(filename);
-  const baseName = clean.replace(/\.pdf$/i, '');
+  const baseName = clean.replace(/\.(pdf|html|htm)$/i, '');
   const lowerBase = baseName.toLowerCase();
   const lowerFolder = normalizeString(folderName).toLowerCase();
 
@@ -217,9 +218,22 @@ export function getChapterSortKey(
 
   // Tier 1: Title & Copyright / About
   const folderTitle = lowerFolder.split(/_(?:en_)?_?by\b/i)[0].replace(/_en$/i, '').trim();
+  const folderPrefix = lowerFolder.split('_')[0].trim();
+  // Generic self-title repeat: "BookName _ BookName" or "BookName _ BookName, Nth Edition"
+  const baseBeforeSep = lowerBase.split(' _ ')[0].trim();
+  const isSelfTitleRepeat = lowerBase.includes(' _ ') && (
+    folderTitle.includes(baseBeforeSep) || baseBeforeSep.includes(folderTitle) ||
+    folderPrefix.includes(baseBeforeSep) || baseBeforeSep.includes(folderPrefix)
+  );
   const isExactFolderMatch =
     lowerBase === lowerFolder ||
     lowerBase === folderTitle ||
+    lowerBase === folderPrefix ||
+    isSelfTitleRepeat ||
+    lowerBase === `${folderTitle} _ ${folderTitle}` ||
+    lowerBase === `${folderPrefix} _ ${folderPrefix}` ||
+    lowerBase === `${folderTitle} full` ||
+    lowerBase === `${folderPrefix} full` ||
     lowerBase === lowerFolder.replace(/^code\s+/i, 'core ') ||
     lowerBase.startsWith('core java for the impatient, 4th edition') ||
     lowerBase === 'core java, volume i_ fundamentals, 13th edition' ||
@@ -230,12 +244,16 @@ export function getChapterSortKey(
     lowerBase === 'the well-grounded java developer, second edition' ||
     lowerBase === 'building intelligent applications with spring ai';
 
-  if (isExactFolderMatch && !baseName.includes(' _ ')) {
+  if (isExactFolderMatch) {
     return { priority: 1, number: 0, title: 'Title & Copyright' };
   }
 
-  // Tier 1: Front Matter, Copyright, Praise, About Author/Reviewer
-  if (/\b(copyright|about\s+the\s+(?:author|technical\s+reviewer)|praise\b|front\s*matter)\b/i.test(baseName)) {
+  // Tier 1: Front Matter, Copyright, Praise, About Author/Reviewer, Dedication, About This eBook
+  // Also: 'dedicate', 'Title Page', 'About the Editors/Authors/Creators', edition-only pages
+  if (
+    /\b(copyright|dedication?|dedicate|about\s+this\s+ebook|halftitle|title\s+page|about\s+the\s+(?:author|editor|technical\s+reviewer|book|ebook|creator|contributor)s?|praise\b|front\s*matter)\b/i.test(baseName) ||
+    /^(?:\w+\s+){0,3}edition$/i.test(baseName.replace(/\s*_.*$/, '').trim())
+  ) {
     let title = baseName.trim();
     const sep = baseName.indexOf(' _ ');
     if (sep !== -1) {
@@ -333,10 +351,24 @@ export function getChapterSortKey(
     return { priority: 5, number: 0, title };
   }
 
-  // Tier 5: Pre-Index Back Matter (Glossary, Bibliography, Afterword, Epilogue, Discussion Questions)
+  // Tier 5: Code Snippets with natural numeric ordering (e.g. Code Snippets 1..11)
+  const codeSnippetMatch = baseName.match(/(?:^|\b)code\s*snippets(?:\s*(\d+))?\b/i);
+  if (codeSnippetMatch) {
+    const num = codeSnippetMatch[1] ? parseInt(codeSnippetMatch[1], 10) : 1;
+    let title = baseName.trim();
+    const sep = baseName.indexOf(' _ ');
+    if (sep !== -1) {
+      title = baseName.substring(0, sep).trim();
+    }
+    return { priority: 5, number: 60 + num, title };
+  }
+
+  // Tier 5: Pre-Index Back Matter (Glossary, Bibliography, References, Items Corresponding, Afterword, Epilogue, Revision History, Discussion Questions, Colophon, Symbols)
+  // Also: OCP-style "Part II_ Examples/Figures/Tables" resource sections
   if (
-    /^(?:\[\s*)?(?:afterword|bibliography|epilogue|discussion\s+questions)(?:[_\s:.-]|\s*\]|$)/i.test(baseName) ||
-    /^glossary(?:\s*_|\s*$|\.pdf$)/i.test(baseName)
+    /^(?:\[\s*)?(?:afterword|bibliography|epilogue|references|items\s+corresponding|revision\s+history|discussion\s+questions|colophon|symbols?)(?:[_\s:.-]|\s*\]|$)/i.test(baseName) ||
+    /^glossary(?:\s*_|\s*$|\.pdf$)/i.test(baseName) ||
+    /^part\s+(?:[IVXLC]+|\d+)[_:.]\s*(?:examples?|figures?|tables?)(?:\s|_|$)/i.test(baseName)
   ) {
     let title = baseName.trim();
     const sep = baseName.indexOf(' _ ');
@@ -503,7 +535,8 @@ export function inferBookMeta(name: string): {
   // - "<Title>_By <Author>"
   // - "<Title>_en__By <Author>"
   const authorPattern = /^(.*?)(?:_+en)?_+(?:by|author)\s+(.+)$/i;
-  const match = normalized.match(authorPattern);
+  const underAuthorPattern = /^(.*?)(?:_+en)?_+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)$/;
+  const match = normalized.match(authorPattern) || normalized.match(underAuthorPattern);
   if (match) {
     let rawTitle = match[1].trim();
     const author = normalizeString(match[2]).replace(/_+/g, ' ').trim();
@@ -618,6 +651,121 @@ export function inferBookMeta(name: string): {
 /**
  * Scan the Books storage root and catalog all books.
  */
+/**
+ * Safely search for local cover image inside a book's folder or asset subfolder.
+ */
+export function findLocalBookCover(storagePath: string, bookId: string): string | undefined {
+  try {
+    if (!fs.existsSync(storagePath)) return undefined;
+    const stat = fs.statSync(storagePath);
+
+    if (stat.isDirectory()) {
+      const entries = fs.readdirSync(storagePath, { withFileTypes: true });
+
+      // 1. Direct cover file in root of book folder (e.g. cover.jpg, cover.png)
+      for (const file of entries) {
+        if (file.isFile()) {
+          const lower = file.name.toLowerCase();
+          if (
+            /^(cover|front)\.(png|jpg|jpeg|webp)$/i.test(lower) ||
+            /coverfigure/i.test(lower)
+          ) {
+            return `/api/asset?book=${encodeURIComponent(bookId)}&file=${encodeURIComponent(file.name)}`;
+          }
+        }
+      }
+
+      // 2. Search subdirectories for files named cover.png, cover.jpg, Cover.jpg, or ISBN cover image
+      for (const dir of entries) {
+        if (dir.isDirectory() && !dir.name.startsWith('.')) {
+          const subDirPath = path.join(storagePath, dir.name);
+          try {
+            const subFiles = fs.readdirSync(subDirPath);
+            for (const sf of subFiles) {
+              const lower = sf.toLowerCase();
+              if (
+                /(^|\b)(cover|front)(\b|$)/i.test(lower) &&
+                /\.(png|jpg|jpeg|webp)$/i.test(lower) &&
+                !/logo|icon|powered|nav|btn/i.test(lower)
+              ) {
+                const rel = `${dir.name}/${sf}`;
+                return `/api/asset?book=${encodeURIComponent(bookId)}&file=${encodeURIComponent(rel)}`;
+              }
+              // Check for ISBN image (e.g. 9781509302611.jpg)
+              if (/^978[0-9]{10}\.(jpg|png|webp|jpeg)$/i.test(sf)) {
+                const rel = `${dir.name}/${sf}`;
+                return `/api/asset?book=${encodeURIComponent(bookId)}&file=${encodeURIComponent(rel)}`;
+              }
+            }
+          } catch {
+            // ignore
+          }
+        }
+      }
+
+      // 3. Check directories that specifically match "Cover Page" or "cover" as a distinct word (NOT "discovery")
+      for (const dir of entries) {
+        if (dir.isDirectory() && /\b(cover|front)\b/i.test(dir.name) && !/discovery/i.test(dir.name)) {
+          const subDirPath = path.join(storagePath, dir.name);
+          try {
+            const subFiles = fs.readdirSync(subDirPath);
+            for (const sf of subFiles) {
+              const lower = sf.toLowerCase();
+              if (
+                /\.(jpg|png|webp|jpeg)$/i.test(lower) &&
+                !/logo|icon|powered|nav|btn/i.test(lower)
+              ) {
+                const rel = `${dir.name}/${sf}`;
+                return `/api/asset?book=${encodeURIComponent(bookId)}&file=${encodeURIComponent(rel)}`;
+              }
+            }
+          } catch {
+            // ignore
+          }
+        }
+      }
+
+      // 4. If no cover image exists, look for a cover PDF (e.g. <Title>.pdf, cover.pdf, inside front cover.pdf)
+      // and extract page 1 image to cover.jpg
+      const coverPdfCandidates = entries.filter(
+        e =>
+          e.isFile() &&
+          /\.pdf$/i.test(e.name) &&
+          !/^[0-9]+[\s._]/.test(e.name) && // Not a numbered chapter
+          !/appendix|index|contents|copyright|part\s+[0-9]/i.test(e.name)
+      );
+
+      if (coverPdfCandidates.length > 0) {
+        // Pick the best candidate: preferably one with 'cover' or matching folder name
+        const bestPdf =
+          coverPdfCandidates.find(p => /\bcover\b/i.test(p.name)) ||
+          coverPdfCandidates.find(p => !/dedication|preface|brief/i.test(p.name)) ||
+          coverPdfCandidates[0];
+
+        if (bestPdf) {
+          const pdfPath = path.join(storagePath, bestPdf.name);
+          const tmpPrefix = path.join('/tmp', `netlib_cov_${Date.now()}`);
+          try {
+            execFileSync('pdfimages', ['-j', '-f', '1', '-l', '1', pdfPath, tmpPrefix], { timeout: 3000 });
+            const extracted = `${tmpPrefix}-000.jpg`;
+            if (fs.existsSync(extracted)) {
+              const destCover = path.join(storagePath, 'cover.jpg');
+              fs.copyFileSync(extracted, destCover);
+              try { fs.unlinkSync(extracted); } catch {}
+              return `/api/asset?book=${encodeURIComponent(bookId)}&file=cover.jpg`;
+            }
+          } catch {
+            // pdfimages failed or not available
+          }
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return undefined;
+}
+
 export function scanBooks(dir?: string, forceRefresh = false): Book[] {
   const booksRoot = path.resolve(dir || getBooksRoot());
 
@@ -654,29 +802,108 @@ export function scanBooks(dir?: string, forceRefresh = false): Book[] {
 
     if (entry.isDirectory()) {
       // Multi-chapter folder book
-      const files = fs
-        .readdirSync(fullPath)
-        .filter(f => !f.startsWith('.') && f.toLowerCase().endsWith('.pdf'));
+      const allEntries = fs.readdirSync(fullPath);
+      // Filter out hidden files and companion asset folders like *_files
+      const files = allEntries.filter(f => !f.startsWith('.'));
+      const pdfFiles = files.filter(f => f.toLowerCase().endsWith('.pdf'));
+      const htmlFiles = files.filter(f => f.toLowerCase().endsWith('.html') || f.toLowerCase().endsWith('.htm'));
 
-      if (files.length === 0) continue;
+      if (pdfFiles.length === 0 && htmlFiles.length === 0) continue;
+
+      // Group chapters by normalized base name (without extension)
+      const cleanBase = (n: string) => n.replace(/\.(pdf|html|htm)$/i, '').trim();
+      const chapterGroupMap = new Map<string, { htmlFile?: string; pdfFile?: string; baseName: string }>();
+
+      // Record HTML files first (prioritizing HTML)
+      for (const hf of htmlFiles) {
+        const base = cleanBase(hf);
+        const key = base.toLowerCase();
+        if (!chapterGroupMap.has(key)) {
+          chapterGroupMap.set(key, { htmlFile: hf, baseName: base });
+        } else {
+          chapterGroupMap.get(key)!.htmlFile = hf;
+        }
+      }
+
+      // Match or add PDF files
+      if (htmlFiles.length === 0) {
+        // Pure PDF book: all PDF files are chapters
+        for (const pf of pdfFiles) {
+          const base = cleanBase(pf);
+          const key = base.toLowerCase();
+          if (!chapterGroupMap.has(key)) {
+            chapterGroupMap.set(key, { pdfFile: pf, baseName: base });
+          } else {
+            chapterGroupMap.get(key)!.pdfFile = pf;
+          }
+        }
+      } else {
+        // Book has HTML chapters: HTML is the canonical source of truth for chapters!
+        // Never add unmatched or differently-named PDF files (e.g. code snippets, full book PDFs) as duplicate chapters.
+        for (const pf of pdfFiles) {
+          const base = cleanBase(pf);
+          const key = base.toLowerCase();
+
+          // 1. Direct match
+          if (chapterGroupMap.has(key)) {
+            chapterGroupMap.get(key)!.pdfFile = pf;
+            continue;
+          }
+
+          // 2. Normalized code snippets match (e.g. "Effective Java, 3rd Edition code snippets 2.pdf" -> "code snippets 2")
+          const snippetMatch = key.match(/(code\s*snippets(?:\s*\d+)?)/i);
+          if (snippetMatch) {
+            const snipKey = snippetMatch[1].toLowerCase();
+            if (chapterGroupMap.has(snipKey)) {
+              chapterGroupMap.get(snipKey)!.pdfFile = pf;
+              continue;
+            }
+          }
+
+          // 3. Match by removing book title/folder prefix (e.g. "Effective Java, 3rd Edition ...")
+          const stripped = key.replace(/^[a-z0-9\s,._-]+?_\s*/i, '').trim();
+          if (stripped && chapterGroupMap.has(stripped)) {
+            chapterGroupMap.get(stripped)!.pdfFile = pf;
+          }
+        }
+      }
+
+      const chapterGroups = Array.from(chapterGroupMap.values());
 
       // Deterministic 8-tier sort with dynamic Part positioning
-      const rawChapters = files.map(f => {
-        const filePath = path.join(fullPath, f);
-        const sortKey = getChapterSortKey(f, entry.name);
-        const stat = fs.statSync(filePath);
-        const pageCount = getPdfPageCount(filePath);
+      const rawChapters = chapterGroups.map(group => {
+        // Representative filename: prioritize PDF file as default, else HTML
+        const primaryFile = group.pdfFile || group.htmlFile!;
+        const primaryPath = path.join(fullPath, primaryFile);
+        const sortKey = getChapterSortKey(primaryFile, entry.name);
+        const stat = fs.existsSync(primaryPath) ? fs.statSync(primaryPath) : { size: 0 };
+
+        let pageCount = 0;
+        if (group.pdfFile) {
+          const pdfPath = path.join(fullPath, group.pdfFile);
+          pageCount = getPdfPageCount(pdfPath);
+        } else {
+          // Estimate page count for HTML (roughly 1 page per 15KB or min 3 pages)
+          pageCount = Math.max(3, Math.round(stat.size / 15000));
+        }
 
         // Dynamically refine Roman/Arabic Part positions relative to adjacent chapters
-        if (/^(?:(?:part\s+)?(X{0,3}(?:IX|IV|V|V?I{1,3}))\.\s+|part\s+\d+[._\s]+)/i.test(f)) {
-          const dynPos = getPartPositionFromPdf(filePath);
-          if (dynPos !== null) {
-            sortKey.number = dynPos;
+        if (/^(?:(?:part\s+)?(X{0,3}(?:IX|IV|V|V?I{1,3}))\.\s+|part\s+\d+[._\s]+)/i.test(primaryFile)) {
+          if (group.pdfFile) {
+            const dynPos = getPartPositionFromPdf(path.join(fullPath, group.pdfFile));
+            if (dynPos !== null) {
+              sortKey.number = dynPos;
+            }
           }
         }
 
         return {
-          filename: f,
+          filename: primaryFile,
+          htmlFilename: group.htmlFile,
+          pdfFilename: group.pdfFile,
+          hasHtml: Boolean(group.htmlFile),
+          hasPdf: Boolean(group.pdfFile),
+          format: group.pdfFile ? ('pdf' as const) : ('html' as const),
           sortKey,
           stat,
           pageCount,
@@ -696,10 +923,12 @@ export function scanBooks(dir?: string, forceRefresh = false): Book[] {
       // Assign sequential monotonic 1-based order and collision-free IDs
       let totalPages = 0;
       let totalSize = 0;
+      let htmlChaptersCount = 0;
       const seenIds = new Set<string>();
       const chapters: Chapter[] = rawChapters.map((rc, idx) => {
         totalPages += rc.pageCount;
         totalSize += rc.stat.size;
+        if (rc.hasHtml) htmlChaptersCount++;
 
         let baseId = makeId(rc.sortKey.title);
         if (!baseId) {
@@ -722,12 +951,21 @@ export function scanBooks(dir?: string, forceRefresh = false): Book[] {
           chapterNumber: rc.sortKey.priority === 4 ? rc.sortKey.number : undefined,
           pageCount: rc.pageCount,
           fileSize: rc.stat.size,
+          htmlFilename: rc.htmlFilename,
+          pdfFilename: rc.pdfFilename,
+          hasHtml: rc.hasHtml,
+          hasPdf: rc.hasPdf,
+          format: rc.format,
         };
       });
 
+      const bookId = makeId(entry.name);
       const meta = inferBookMeta(entry.name);
+      const localCover = findLocalBookCover(fullPath, bookId);
+      const resolvedCover = localCover || BOOK_COVERS[bookId];
+
       books.push({
-        id: makeId(entry.name),
+        id: bookId,
         title: meta.title,
         author: meta.author,
         publisher: meta.publisher,
@@ -735,6 +973,7 @@ export function scanBooks(dir?: string, forceRefresh = false): Book[] {
         volume: meta.volume,
         description: `${meta.title} — ${chapters.length} chapters, ${totalPages} pages`,
         coverColor: pickColor(colorIdx++),
+        coverUrl: resolvedCover || undefined,
         tags: meta.tags,
         isMultiChapter: true,
         chapters,
@@ -743,6 +982,8 @@ export function scanBooks(dir?: string, forceRefresh = false): Book[] {
         totalSize,
         addedAt: new Date().toISOString(),
         storagePath: fullPath,
+        htmlChaptersCount,
+        hasFullHtml: htmlChaptersCount === chapters.length && chapters.length > 0,
       });
     } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.pdf')) {
       // Standalone single-file PDF
@@ -776,11 +1017,103 @@ export function scanBooks(dir?: string, forceRefresh = false): Book[] {
     }
   }
 
-  // Stable default sort by title
-  books.sort((a, b) => a.title.localeCompare(b.title));
+  // Pedagogical default sort by Java Learning Path (Basics -> Intermediate -> Advanced -> Architecture)
+  books.sort((a, b) => {
+    const rankA = getJavaLearningRank(a);
+    const rankB = getJavaLearningRank(b);
+    if (rankA !== rankB) return rankA - rankB;
+    return a.title.localeCompare(b.title);
+  });
 
   catalogCache.set(booksRoot, books);
   return books;
+}
+
+/**
+ * Master curriculum learning rank for Java developers (from basic syntax to mastery & cloud-native AI).
+ * 10..19: Java Core Fundamentals (Head First, Core Java Vol I, Impatient, Cookbook)
+ * 20..29: Advanced Java, Concurrency, JVM Internals & Certification (Effective Java, Vol II, Well-Grounded, OCP)
+ * 30..39: Core Developer Tools (Git, SQL)
+ * 40..49: OOP Design Patterns & Software Design (Head First Design Patterns, Adaptive Code SOLID, Coupling, API Design)
+ * 50..59: Enterprise Spring & Spring Boot (Spring Start Here, Spring in Action, Spring Boot, Spring Security)
+ * 60..69: Microservices & Cloud-Native (Spring Microservices, Cloud Native Spring, Building Microservices)
+ * 70..79: Distributed Systems & Software Architecture (DDIA, Distributed Systems, Software Architecture)
+ * 80..89: Production Infrastructure & Operations (Kubernetes, SRE)
+ * 90..99: Modern AI Engineering with Java & LLMs (Spring AI, GenAI with Java, AI Agents, AI Engineering, LLMOps)
+ */
+export function getJavaLearningRank(book: { id?: string; title?: string }): number {
+  const id = (book.id || '').toLowerCase();
+  const title = (book.title || '').toLowerCase();
+
+  // Tier 9: Modern AI Engineering with Java & LLMs
+  if (id.includes('spring-ai') || title.includes('spring ai')) return 90;
+  if (id.includes('generative-ai') || title.includes('generative ai')) return 91;
+  if (id.includes('ai-agents') || title.includes('ai agents')) return 92;
+  if (id.includes('ai-engineering') || title.includes('ai engineering')) return 93;
+  if (id.includes('llmops') || title.includes('llmops')) return 94;
+
+  // Tier 8: Production Ops, Reliability & Kubernetes
+  if (id.includes('kubernetes') || title.includes('kubernetes')) return 80;
+  if (id.includes('site-reliability') || title.includes('site reliability')) return 81;
+
+  // Tier 7: Distributed Systems & Enterprise Software Architecture
+  if (id.includes('software-architecture-the-hard-parts') || title.includes('the hard parts')) return 73;
+  if (id.includes('fundamentals-of-software-architecture') || title.includes('software architecture')) return 72;
+  if (id.includes('designing-distributed') || title.includes('designing distributed')) return 71;
+  if (id.includes('designing-data-intensive') || title.includes('designing data-intensive')) return 70;
+
+  // Tier 6: Microservices & Cloud-Native
+  if (id.includes('building-microservices') || title.includes('building microservices')) return 62;
+  if (id.includes('cloud-native-spring') || title.includes('cloud native spring')) return 61;
+  if (id.includes('spring-microservices') || title.includes('spring microservices')) return 60;
+
+  // Tier 5: Spring Ecosystem & Spring Boot
+  if (id.includes('spring-security') || title.includes('spring security')) return 53;
+  if (id.includes('spring-boot') || title.includes('spring boot')) return 52;
+  if (id.includes('spring-in-action') || title.includes('spring in action')) return 51;
+  if (id.includes('spring-start-here') || title.includes('spring start here')) return 50;
+
+  // Tier 4: OOP Design Patterns & Software Design
+  if (id.includes('api-design') || title.includes('api design')) return 43;
+  if (id.includes('balancing-coupling') || title.includes('balancing coupling')) return 42;
+  if (id.includes('adaptive-code') || title.includes('adaptive code')) return 41;
+  if (id.includes('head-first-design-patterns') || title.includes('head first design patterns')) return 40;
+
+  // Tier 3: Core Developer Tools (Git & SQL)
+  if (id.includes('learning-sql') || title.includes('learning sql')) return 31;
+  if (id.includes('learning-git') || title.includes('learning git')) return 30;
+
+  // Tier 2: Advanced Java, Concurrency, JVM Internals & Certification
+  if (id.includes('ocp') || title.includes('ocp') || title.includes('oracle certified')) return 24;
+  if (id.includes('well-grounded') || title.includes('well-grounded')) return 23;
+
+  const isVol2 =
+    (id.includes('core-java') || id.includes('code-java')) &&
+    (id.includes('vol-ii') || id.includes('volume-ii') || id.includes('vol-13-ii') || id.includes('vol-2') || title.includes('volume ii') || title.includes('advanced features'));
+  if (isVol2) {
+    if (id.includes('14') || title.includes('14th')) return 21;
+    if (id.includes('13') || title.includes('13th') || id.includes('vol-13-ii')) return 22;
+    if (id.includes('12') || title.includes('12th')) return 22;
+    return 22;
+  }
+
+  if (id.includes('effective-java') || title.includes('effective java')) return 20;
+
+  // Tier 1: Java Basics & Core Foundations
+  if (id.includes('java-cookbook') || title.includes('java cookbook')) return 15;
+
+  const isVol1 = (id.includes('core-java') || id.includes('code-java')) && !isVol2;
+  if (isVol1) {
+    if (id.includes('14') || title.includes('14th')) return 12;
+    if (id.includes('13') || title.includes('13th')) return 13;
+    if (id.includes('12') || title.includes('12th') || id.includes('vol-12-i')) return 14;
+    return 14;
+  }
+
+  if (id.includes('for-the-impatient') || title.includes('for the impatient')) return 11;
+  if (id.includes('head-first-java') || title.includes('head first java')) return 10;
+
+  return 100;
 }
 
 /**
@@ -904,6 +1237,14 @@ export function searchAndFilterBooks(
   // 4. Sorting
   if (options.sort) {
     switch (options.sort) {
+      case 'learning':
+        result.sort((a, b) => {
+          const rankA = getJavaLearningRank(a);
+          const rankB = getJavaLearningRank(b);
+          if (rankA !== rankB) return rankA - rankB;
+          return a.title.localeCompare(b.title);
+        });
+        break;
       case 'title-asc':
         result.sort((a, b) => a.title.localeCompare(b.title));
         break;

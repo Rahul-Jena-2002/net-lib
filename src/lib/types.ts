@@ -1,18 +1,23 @@
 // Core data contracts and types for NetLib
 
-export type Theme = 'dark' | 'light';
+export type Theme = 'dark' | 'light' | 'sepia';
 export type FontSize = 'sm' | 'md' | 'lg' | 'xl';
 export type ReaderWidth = 'narrow' | 'standard' | 'wide' | 'full';
 
 export interface Chapter {
   id: string;               // Unique slug (e.g. "1-an-introduction-to-java")
   title: string;            // Clean human-readable title (e.g. "1. An Introduction to Java")
-  filename: string;         // Disk filename
+  filename: string;         // Disk filename (prioritizing PDF as default)
   order: number;            // Monotonic 1-based sequential index (1, 2, 3...)
   priority: number;         // Sort tier (0=Cover, 1=Title, 2=TOC, 3=Preface, 4=Numbered, 5=Appendix, 6=Index, 7=Other)
   chapterNumber?: number;   // Parsed chapter integer if numbered (e.g. 1)
   pageCount?: number;       // Number of pages in this chapter
   fileSize?: number;        // File size in bytes
+  htmlFilename?: string;    // Relative HTML filename if available
+  pdfFilename?: string;     // Relative PDF filename if available
+  hasHtml?: boolean;        // True if HTML version is available locally
+  hasPdf?: boolean;         // True if PDF version is available locally
+  format?: 'pdf' | 'html';  // Primary format to display ('pdf' default)
 }
 
 export interface Book {
@@ -34,6 +39,8 @@ export interface Book {
   totalSize: number;        // Total size in bytes
   addedAt: string;          // ISO timestamp
   storagePath?: string;     // Filesystem path
+  htmlChaptersCount?: number; // Number of chapters with HTML available
+  hasFullHtml?: boolean;      // True if all chapters have HTML available
 }
 
 export interface BookProgress {

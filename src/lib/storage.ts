@@ -3,10 +3,10 @@ import type { BookProgress, ReaderPreferences, Theme, FontSize, ReaderWidth } fr
 export const READER_SETTINGS_KEY = 'netlib_reader_settings';
 
 export const DEFAULT_READER_SETTINGS: ReaderPreferences = {
-  theme: 'dark',
+  theme: 'sepia',
   fontSize: 'md',
-  readerWidth: 'wide',
-  sidebarOpen: false,
+  readerWidth: 'standard',
+  sidebarOpen: true,
 };
 
 export function getProgressKey(bookId: string): string {
@@ -43,7 +43,7 @@ export function parseProgressPayload(rawJson: string | null, fallbackBookId: str
 }
 
 export function sanitizeReaderSettings(raw: Partial<ReaderPreferences> | null | undefined): ReaderPreferences {
-  const validThemes: Theme[] = ['dark', 'light'];
+  const validThemes: Theme[] = ['dark', 'light', 'sepia'];
   const validSizes: FontSize[] = ['sm', 'md', 'lg', 'xl'];
   const validWidths: ReaderWidth[] = ['narrow', 'standard', 'wide', 'full'];
 

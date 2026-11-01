@@ -12,11 +12,14 @@ import {
   ChevronDown,
   Loader2,
   AlertCircle,
+  CheckCircle2,
+  ChevronRight,
 } from 'lucide-react';
 
-// Configure pdfjs worker to local public path
+// Configure pdfjs worker to local public path with dynamic basePath detection
 if (typeof window !== 'undefined') {
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+  const isGh = window.location.pathname.startsWith('/net-lib') || (process.env.NEXT_PUBLIC_BASE_PATH === '/net-lib');
+  const basePath = isGh ? '/net-lib' : (process.env.NEXT_PUBLIC_BASE_PATH || '');
   pdfjs.GlobalWorkerOptions.workerSrc = `${basePath}/pdf.worker.min.mjs`;
 }
 
@@ -30,6 +33,8 @@ interface LiquidReaderProps {
   fitWidth: boolean;
   darkInvert: boolean;
   onScrollToPageRequest?: (callback: (page: number) => void) => void;
+  nextChapterTitle?: string;
+  onNextChapter?: () => void;
 }
 
 interface PageItemProps {
@@ -78,7 +83,7 @@ const PageItem = React.memo(function PageItem({
         darkInvert ? 'filter invert-[92%] hue-rotate-180 brightness-95' : ''
       }`}
     >
-      <div className="bg-white overflow-hidden shadow-2xl flex justify-center w-full">
+      <div className="bg-white overflow-hidden rounded-md border border-neutral-700/60 shadow-sm flex justify-center w-full">
         <Page
           pageNumber={pageNumber}
           width={width}
@@ -102,11 +107,14 @@ const PageItem = React.memo(function PageItem({
 export default function LiquidReader({
   pdfUrl,
   bookTitle,
+  activeChapterTitle,
   currentPage,
   onPageChange,
   scale,
   fitWidth,
   darkInvert,
+  nextChapterTitle,
+  onNextChapter,
 }: LiquidReaderProps) {
   const [numPages, setNumPages] = useState<number>(0);
   const [containerWidth, setContainerWidth] = useState<number>(900);
@@ -159,7 +167,7 @@ export default function LiquidReader({
   return (
     <div
       ref={containerRef}
-      className="relative flex-1 w-full h-full flex flex-col overflow-y-auto overflow-x-hidden pt-0 pb-16 px-0 items-center"
+      className="relative flex-1 w-full h-full flex flex-col overflow-y-auto overflow-x-hidden pt-16 sm:pt-20 pb-16 px-0 items-center"
     >
       {loadError ? (
         <div className="m-auto text-center p-8 liquid-glass rounded-2xl max-w-md">
@@ -212,6 +220,29 @@ export default function LiquidReader({
               onVisible={handlePageVisible}
             />
           ))}
+
+          {/* End-of-Chapter Transition Card */}
+          {numPages > 0 && onNextChapter && nextChapterTitle && (
+            <div className="w-full max-w-xl mx-auto my-8 p-6 rounded-xl bg-slate-900/90 text-center border border-white/10 shadow-sm flex flex-col items-center gap-3">
+              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Chapter Section Completed</span>
+              </div>
+              <h4 className="text-sm font-bold text-white max-w-md line-clamp-2">
+                Up Next: {nextChapterTitle}
+              </h4>
+              <p className="text-xs text-slate-300 opacity-75">
+                Proceed directly to the next publication chapter.
+              </p>
+              <button
+                onClick={onNextChapter}
+                className="mt-2 px-5 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs transition-colors flex items-center gap-2 cursor-pointer"
+              >
+                <span>Read Next Chapter</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </Document>
       )}
     </div>

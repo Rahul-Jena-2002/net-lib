@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,9 +15,9 @@ body {
   padding: 0 !important;
   width: 100% !important;
   min-height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', sans-serif;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Ensure full-width viewport coverage across all layout containers */
@@ -30,38 +31,28 @@ footer {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   APPLE LIQUID GLASS DESIGN SYSTEM (VisionOS & macOS Specification)
-   Optical refraction, dual-layer specular highlights, and fluid depth
+   EDITORIAL DIGITAL LIBRARY DESIGN SYSTEM
+   Authentic print-inspired reading interface with calm contrast,
+   structural hairlines, and authentic book paper palettes.
    ───────────────────────────────────────────────────────────── */
 
-/* Dark Mode Liquid Glass (Permanent Default) */
+/* Default Theme Tokens (Clean Editorial Dark) */
 :root,
 .theme-dark {
-  --canvas-bg: #07090e;
-  --text-primary: #f8fafc;
+  --canvas-bg: #0c1017;
+  --canvas-surface: #141a24;
+  --canvas-surface-hover: #1b2331;
+  --canvas-border: rgba(255, 255, 255, 0.08);
+  --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
+
+  --nav-bg: rgba(12, 16, 23, 0.92);
+  --nav-border: rgba(255, 255, 255, 0.08);
   
-  /* Navbar Frosted Glass: 55% translucent with intense localized optical blur */
-  --glass-nav-bg: rgba(11, 15, 25, 0.55);
-  --glass-nav-shadow: none;
-
-  --glass-bg: rgba(13, 18, 30, 0.70);
-  --glass-surface: rgba(18, 24, 38, 0.75);
-  --glass-border-top: rgba(255, 255, 255, 0.30);
-  --glass-border-sides: rgba(255, 255, 255, 0.14);
-  --glass-border-bottom: rgba(255, 255, 255, 0.08);
-  --glass-inner-shadow: none;
-  --glass-drop-shadow: none;
-
-  --glass-pill-bg: rgba(255, 255, 255, 0.06);
-  --glass-pill-hover: rgba(255, 255, 255, 0.12);
-  --glass-pill-active: rgba(255, 255, 255, 0.18);
-  --glass-pill-border: rgba(255, 255, 255, 0.12);
-  --glass-pill-border-top: rgba(255, 255, 255, 0.24);
-  --glass-pill-border-hover: rgba(255, 255, 255, 0.28);
-  --glass-pill-specular: transparent;
-  --glass-pill-specular-hover: transparent;
+  --card-bg: #131822;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --card-border-hover: rgba(255, 255, 255, 0.16);
 }
 
 body {
@@ -69,81 +60,228 @@ body {
   color: var(--text-primary);
 }
 
-/* Apple Liquid Glass Floating Navigation Bar (Authentic Dark Liquid Glass) */
+/* Structural Header Bar (Replaces floating liquid glass) */
 .liquid-glass-nav {
-  background: rgba(13, 17, 28, 0.78);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-top: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.20),
-    0 16px 40px -10px rgba(0, 0, 0, 0.50);
-  transition: all 0.25s ease;
+  background: var(--nav-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--nav-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-/* Apple VisionOS Liquid Glass Dropdown Menu (Translucent Smoked Crystal Glass) */
+.liquid-glass-nav button,
+.liquid-glass-nav a,
+.liquid-glass-nav .liquid-glass-pill {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.liquid-glass-nav button:hover,
+.liquid-glass-nav a:hover,
+.liquid-glass-nav .liquid-glass-pill:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.liquid-glass-nav button:active,
+.liquid-glass-nav a:active,
+.liquid-glass-nav .liquid-glass-pill:active {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Top Viewport Soft Edge Fade */
+.reader-top-veil {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  pointer-events: none;
+  z-index: 40;
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.8) 50%, rgba(0, 0, 0, 0) 100%);
+  transition: opacity 0.2s ease;
+}
+
+.reader-top-veil-dark {
+  background: linear-gradient(to bottom, rgba(12, 16, 23, 0.95) 0%, rgba(12, 16, 23, 0.6) 60%, transparent 100%);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   AUTHENTIC SEPIA & WARM BOOK PAPER (Soothing, Not Pure White)
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bg-paper: #fbf8f1;             /* Authentic warm cream book paper */
+  --text-primary-paper: #2d261e;   /* Warm charcoal-brown book ink */
+  --text-muted-paper: #6e6259;     /* Soft warm muted ink */
+  --border-ink: #ede4d3;           /* Warm paper hairline divider */
+  --selection-bg: #eddcb9;         /* Warm amber selection */
+}
+
+/* Reader Sepia Theme */
+.reader-theme-sepia {
+  background-color: #fbf8f1 !important;
+  color: #2d261e !important;
+}
+
+.reader-theme-sepia main,
+.reader-theme-sepia .liquid-html-content {
+  background-color: #fbf8f1 !important;
+  color: #2d261e !important;
+}
+
+.reader-top-veil-sepia {
+  background: linear-gradient(to bottom, rgba(251, 248, 241, 0.98) 0%, rgba(251, 248, 241, 0.7) 60%, transparent 100%) !important;
+}
+
+/* Reader Light Theme (Warm subtle paper, not blinding white) */
+.reader-theme-light {
+  background-color: #f8f9fa !important;
+  color: #1e293b !important;
+}
+
+.reader-theme-light main,
+.reader-theme-light .liquid-html-content {
+  background-color: #f8f9fa !important;
+  color: #1e293b !important;
+}
+
+.reader-top-veil-light {
+  background: linear-gradient(to bottom, rgba(248, 249, 250, 0.98) 0%, rgba(248, 249, 250, 0.7) 60%, transparent 100%) !important;
+}
+
+/* Reader Theme Header Variants */
+.reader-theme-light .liquid-glass-nav {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+.reader-theme-sepia .liquid-glass-nav {
+  background: rgba(245, 238, 225, 0.95) !important;
+  border: 1px solid #e5dbca !important;
+  color: #2d261e !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+}
+
+.reader-theme-light .liquid-glass-nav *,
+.reader-theme-sepia .liquid-glass-nav * {
+  color: inherit !important;
+}
+
+.reader-theme-light .liquid-glass-nav svg,
+.reader-theme-sepia .liquid-glass-nav svg {
+  color: currentColor !important;
+  stroke: currentColor !important;
+}
+
+.reader-theme-light .liquid-glass-nav button:hover,
+.reader-theme-light .liquid-glass-nav a:hover,
+.reader-theme-light .liquid-glass-nav .liquid-glass-pill:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+
+.reader-theme-sepia .liquid-glass-nav button:hover,
+.reader-theme-sepia .liquid-glass-nav a:hover,
+.reader-theme-sepia .liquid-glass-nav .liquid-glass-pill:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+.reader-theme-light .liquid-glass-dropdown {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+.reader-theme-sepia .liquid-glass-dropdown {
+  background: #fbf8f1 !important;
+  border: 1px solid #ede4d3 !important;
+  color: #2d261e !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+.reader-theme-light .liquid-glass-active-item {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+  font-weight: 600 !important;
+}
+
+.reader-theme-sepia .liquid-glass-active-item {
+  background: #f1e7d2 !important;
+  color: #2d261e !important;
+  font-weight: 600 !important;
+}
+
+.reader-theme-light .liquid-glass-item {
+  color: #334155 !important;
+}
+
+.reader-theme-sepia .liquid-glass-item {
+  color: #4a3f35 !important;
+}
+
+.reader-theme-light .liquid-glass-item:hover {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.reader-theme-sepia .liquid-glass-item:hover {
+  background: #f5eedf !important;
+  color: #2d261e !important;
+}
+
+/* Chapter Dropdown Menu (Clean Structured Palette) */
 .liquid-glass-dropdown {
-  background: rgba(13, 18, 30, 0.82);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-top: 1px solid rgba(255, 255, 255, 0.40);
-  box-shadow: 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.25),
-    0 24px 50px -10px rgba(0, 0, 0, 0.60),
-    0 0 20px rgba(56, 189, 248, 0.15);
+  background: #131822;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  border-radius: 0.75rem;
 }
 
-/* Liquid Glass Active Highlight Capsule (Electric Cyan Glow & Specular Sheen) */
+/* Dropdown Active Highlight */
 .liquid-glass-active-item {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.28) 0%, rgba(99, 102, 241, 0.22) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.55);
-  border-top: 1px solid rgba(255, 255, 255, 0.50);
-  box-shadow: 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.35),
-    0 0 15px rgba(56, 189, 248, 0.30);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   color: #ffffff !important;
 }
 
-/* Liquid Glass Item Hover Refraction */
+/* Dropdown Item */
 .liquid-glass-item {
   background: transparent;
   border: 1px solid transparent;
-  transition: all 0.15s ease;
-  color: #f1f5f9;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  color: #94a3b8;
 }
 .liquid-glass-item:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-top-color: rgba(255, 255, 255, 0.30);
+  background: rgba(255, 255, 255, 0.05);
   color: #ffffff !important;
 }
 
-/* Liquid Glass Trigger Capsule */
+/* Chapter Selector Trigger Capsule */
 .liquid-glass-trigger {
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-top: 1px solid rgba(255, 255, 255, 0.35);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.20);
-  color: #ffffff;
-  transition: all 0.2s ease;
+  background: #141a24;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e2e8f0;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 .liquid-glass-trigger:hover,
 .liquid-glass-trigger.active {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.28) 0%, rgba(99, 102, 241, 0.20) 100%);
-  border: 1px solid rgba(56, 189, 248, 0.50);
-  border-top: 1px solid rgba(255, 255, 255, 0.50);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.30), 0 0 14px rgba(56, 189, 248, 0.25);
+  background: #1c2433;
+  border-color: rgba(255, 255, 255, 0.2);
   color: #ffffff;
 }
 
-/* Sleek Translucent Glass Scrollbar */
+/* Clean Scrollbar */
 .glass-scroll {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 .glass-scroll::-webkit-scrollbar {
   width: 5px;
@@ -152,89 +290,50 @@ body {
   background: transparent;
 }
 .glass-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 .glass-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.35);
 }
 
-/* Apple Liquid Glass Container Utility (Zero Drop Shadow, pure optical glass) */
+/* Clean Container Utility */
 .liquid-glass {
-  background: var(--glass-bg);
-  backdrop-filter: blur(28px) saturate(190%) contrast(102%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%) contrast(102%);
-  border-top: 1px solid var(--glass-border-top);
-  border-left: 1px solid var(--glass-border-sides);
-  border-right: 1px solid var(--glass-border-sides);
-  border-bottom: 1px solid var(--glass-border-bottom);
-  box-shadow: none;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  border-radius: 0.75rem;
 }
 
-/* Apple Liquid Glass Floating Modal & Dialog (Intense 36px Frosted Optical Blur) */
+/* Modal Dialog Styling */
 .liquid-glass-modal {
-  background: var(--glass-bg);
-  backdrop-filter: blur(36px) saturate(200%) contrast(102%);
-  -webkit-backdrop-filter: blur(36px) saturate(200%) contrast(102%);
-  border: 1px solid var(--glass-border-sides);
-  border-top: 1px solid var(--glass-border-top);
-  box-shadow: none !important;
+  background: #121722;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  border-radius: 1rem;
 }
 
-/* Liquid Glass Capsule / Pill (Completely shadow-free, weightless optical glass) */
+/* Pill Utility */
 .liquid-glass-pill {
-  background: var(--glass-pill-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-pill-border);
-  border-top-color: var(--glass-pill-border-top);
-  box-shadow: none !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .liquid-glass-pill:hover {
-  background: var(--glass-pill-hover);
-  border-color: var(--glass-pill-border-hover);
-  box-shadow: none !important;
-  transform: translateY(-0.5px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
 .liquid-glass-pill:active {
-  background: var(--glass-pill-active);
-  transform: translateY(0) scale(0.98);
-  box-shadow: none !important;
+  background: rgba(255, 255, 255, 0.12);
 }
 
-/* Ambient Optical Background Lighting (Gives Liquid Glass real light fields to bend & refract) */
-.ambient-optical-canvas {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 0;
-}
-
-.ambient-light-orb-1 {
-  position: absolute;
-  top: -20%;
-  left: 30%;
-  width: 900px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, rgba(99, 102, 241, 0.08) 50%, transparent 75%);
-  border-radius: 9999px;
-  filter: blur(140px);
-}
-
+/* Disable AI radial orbs completely */
+.ambient-optical-canvas,
+.ambient-light-orb-1,
 .ambient-light-orb-2 {
-  position: absolute;
-  top: 40%;
-  right: -10%;
-  width: 700px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, rgba(59, 130, 246, 0.06) 50%, transparent 75%);
-  border-radius: 9999px;
-  filter: blur(140px);
+  display: none !important;
 }
 
 /* Scrollbar styling */
@@ -246,9 +345,694 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
+  background: rgba(148, 163, 184, 0.25);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5);
+  background: rgba(148, 163, 184, 0.45);
 }
+
+/* ─────────────────────────────────────────────────────────────
+   UNIFIED READER TYPOGRAPHY & DESIGN SYSTEM
+   Universal, high-readability styling across all book publications
+   ───────────────────────────────────────────────────────────── */
+
+.liquid-html-content {
+  color: inherit;
+  word-break: break-word;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+/* ── Headings ── */
+.liquid-html-content h1 {
+  font-size: 2.15rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  margin-top: 2rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.liquid-html-content.theme-light h1 {
+  color: #0f172a;
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+.liquid-html-content.theme-sepia h1 {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 2.25rem !important;
+  line-height: 1.3 !important;
+  margin-bottom: 1.5rem !important;
+  color: #111111 !important;
+  border-bottom: 1px solid var(--border-ink) !important;
+}
+.liquid-html-content.theme-dark h1 {
+  color: #ffffff;
+}
+
+.liquid-html-content h1 span.before {
+  color: #38bdf8;
+  font-weight: 700;
+  font-size: 1rem;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+
+.liquid-html-content h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  margin-top: 2.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.liquid-html-content.theme-light h2 {
+  color: #1e293b;
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+.liquid-html-content.theme-sepia h2 {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  font-size: 1.6rem !important;
+  line-height: 1.35 !important;
+  margin-top: 2rem !important;
+  margin-bottom: 1rem !important;
+  color: #111111 !important;
+  border-bottom: 1px solid var(--border-ink) !important;
+}
+
+.liquid-html-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 2.25rem;
+  margin-bottom: 0.85rem;
+}
+
+.liquid-html-content h4,
+.liquid-html-content h5 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Paragraphs & Text ── */
+.liquid-html-content.theme-sepia {
+  font-family: 'Merriweather', Georgia, serif !important;
+  color: var(--text-primary-paper) !important;
+  background-color: var(--bg-paper) !important;
+  line-height: 1.75 !important;
+  letter-spacing: -0.01em !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.liquid-html-content p {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  line-height: 1.85;
+}
+.liquid-html-content.theme-sepia p {
+  color: var(--text-primary-paper) !important;
+  line-height: 1.75 !important;
+  margin-bottom: 1.75rem !important;
+  font-family: 'Merriweather', Georgia, serif !important;
+}
+
+.liquid-html-content strong {
+  font-weight: 600;
+}
+.liquid-html-content.theme-light strong {
+  color: #0f172a;
+}
+.liquid-html-content.theme-sepia strong {
+  color: #111111 !important;
+  font-weight: 700 !important;
+}
+.liquid-html-content.theme-dark strong {
+  color: #ffffff;
+}
+
+.liquid-html-content em {
+  font-style: italic;
+  color: inherit;
+}
+
+.liquid-html-content a {
+  color: #38bdf8;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(56, 189, 248, 0.4);
+  transition: all 0.2s ease;
+}
+.liquid-html-content.theme-sepia a {
+  color: #222222 !important;
+  text-decoration-color: #888888 !important;
+}
+.liquid-html-content.theme-sepia a:hover {
+  color: #000000 !important;
+  text-decoration-color: #111111 !important;
+}
+.liquid-html-content.theme-sepia ::selection {
+  background: var(--selection-bg) !important;
+  color: var(--text-primary-paper) !important;
+}
+.liquid-html-content.theme-sepia img {
+  filter: grayscale(100%) !important;
+  opacity: 0.95 !important;
+  mix-blend-mode: multiply !important;
+}
+.liquid-html-content a:hover {
+  color: #7dd3fc;
+  text-decoration-color: #7dd3fc;
+}
+
+/* ── Inline Code Badges & Literals (.Literal-fc, code:not(pre code), .fm-code-in-text, span.teletype, tt) ── */
+.liquid-html-content code:not(pre code),
+.liquid-html-content span.Literal-fc,
+.liquid-html-content span.literal,
+.liquid-html-content span.code,
+.liquid-html-content span.command,
+.liquid-html-content .fm-code-in-text,
+.liquid-html-content span.teletype,
+.liquid-html-content tt {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.88em;
+  padding: 0.15em 0.45em;
+  border-radius: 0.375rem;
+  transition: background-color 0.15s ease;
+}
+
+/* Dark Theme Inline Code */
+.liquid-html-content.theme-dark code:not(pre code),
+.liquid-html-content.theme-dark span.Literal-fc,
+.liquid-html-content.theme-dark span.literal,
+.liquid-html-content.theme-dark span.code,
+.liquid-html-content.theme-dark span.command,
+.liquid-html-content.theme-dark .fm-code-in-text,
+.liquid-html-content.theme-dark span.teletype,
+.liquid-html-content.theme-dark tt {
+  background: rgba(56, 189, 248, 0.12);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.22);
+}
+
+/* Sepia / Grayscale Theme Inline Code */
+.liquid-html-content.theme-sepia code:not(pre code),
+.liquid-html-content.theme-sepia span.Literal-fc,
+.liquid-html-content.theme-sepia span.literal,
+.liquid-html-content.theme-sepia span.code,
+.liquid-html-content.theme-sepia span.command,
+.liquid-html-content.theme-sepia .fm-code-in-text,
+.liquid-html-content.theme-sepia span.teletype,
+.liquid-html-content.theme-sepia tt {
+  background: #f0f0f0 !important;
+  color: #111111 !important;
+  border: 1px solid #e0e0e0 !important;
+}
+
+/* Light Theme Inline Code */
+.liquid-html-content.theme-light code:not(pre code),
+.liquid-html-content.theme-light span.Literal-fc,
+.liquid-html-content.theme-light span.literal,
+.liquid-html-content.theme-light span.code,
+.liquid-html-content.theme-light span.command,
+.liquid-html-content.theme-light .fm-code-in-text,
+.liquid-html-content.theme-light span.teletype,
+.liquid-html-content.theme-light tt {
+  background: #eef2f6;
+  color: #0369a1;
+  border: 1px solid #dbe2ea;
+}
+
+/* ── Code Blocks (<pre>, .code-block-wrapper, example containers) ── */
+.liquid-html-content .code-block-wrapper {
+  position: relative;
+  margin: 1.75rem 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+}
+
+.liquid-html-content.theme-dark .code-block-wrapper {
+  background: #0d121d;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.liquid-html-content.theme-sepia .code-block-wrapper {
+  background: #f6f6f6 !important;
+  border: 1px solid #e2e2e2 !important;
+  box-shadow: none !important;
+}
+.liquid-html-content.theme-light .code-block-wrapper {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.06);
+}
+
+.liquid-html-content pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace !important;
+  font-size: 0.9em;
+  line-height: 1.65;
+  white-space: pre !important;
+  word-spacing: normal;
+  word-break: normal;
+  tab-size: 2;
+  hyphens: none;
+  overflow-x: auto;
+}
+
+.liquid-html-content.theme-dark pre {
+  color: #f1f5f9;
+}
+.liquid-html-content.theme-sepia pre {
+  color: #111111 !important;
+}
+.liquid-html-content.theme-light pre {
+  color: #1e293b;
+}
+
+/* Example Headings above code blocks (e.g. Example 16-1. json/...) */
+.liquid-html-content div[data-type="example"] h5,
+.liquid-html-content div.example h5 {
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.65rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0.9;
+}
+.liquid-html-content div[data-type="example"] h5 span.label {
+  font-weight: 700;
+  color: #38bdf8;
+}
+.liquid-html-content.theme-sepia div[data-type="example"] h5 span.label {
+  color: #334155;
+}
+.liquid-html-content div[data-type="example"] h5 em {
+  font-family: ui-monospace, monospace;
+  font-size: 0.88em;
+  opacity: 0.8;
+}
+
+/* ── Syntax Highlighting Tokens (Universal across all languages) ── */
+/* Strings */
+.liquid-html-content pre code.s,
+.liquid-html-content pre code.s1,
+.liquid-html-content pre code.s2,
+.liquid-html-content pre code.sb,
+.liquid-html-content pre code.sc,
+.liquid-html-content pre code.sx {
+  color: #34d399 !important; /* Emerald */
+}
+.liquid-html-content.theme-light pre code.s,
+.liquid-html-content.theme-light pre code.s1,
+.liquid-html-content.theme-light pre code.s2 {
+  color: #047857 !important;
+}
+
+/* Keys / Tag Names / Properties (like "name": "robinparse") */
+.liquid-html-content pre code.nt,
+.liquid-html-content pre code.na,
+.liquid-html-content pre code.nc,
+.liquid-html-content pre code.nn {
+  color: #c084fc !important; /* Soft Purple */
+  font-weight: 600;
+}
+.liquid-html-content.theme-light pre code.nt {
+  color: #7c3aed !important;
+}
+
+/* Keywords (SELECT, FROM, const, class, import) */
+.liquid-html-content pre code.k,
+.liquid-html-content pre code.kd,
+.liquid-html-content pre code.kn,
+.liquid-html-content pre code.kr,
+.liquid-html-content pre code.kc,
+.liquid-html-content pre code.kt {
+  color: #38bdf8 !important; /* Electric Cyan */
+  font-weight: 600;
+}
+.liquid-html-content.theme-light pre code.k,
+.liquid-html-content.theme-light pre code.kd {
+  color: #0284c7 !important;
+}
+
+/* Numbers */
+.liquid-html-content pre code.m,
+.liquid-html-content pre code.mi,
+.liquid-html-content pre code.mf,
+.liquid-html-content pre code.mo {
+  color: #fbbf24 !important; /* Amber */
+}
+
+/* Comments */
+.liquid-html-content pre code.c,
+.liquid-html-content pre code.c1,
+.liquid-html-content pre code.cm,
+.liquid-html-content pre code.cp,
+.liquid-html-content pre code.cs {
+  color: #64748b !important;
+  font-style: italic;
+}
+
+/* Punctuation & Brackets */
+.liquid-html-content pre code.p,
+.liquid-html-content pre code.o {
+  color: #94a3b8 !important;
+}
+
+/* ── Pure Monochrome Syntax Highlighting for Theme Sepia / Grayscale ── */
+.liquid-html-content.theme-sepia pre code,
+.liquid-html-content.theme-sepia pre code * {
+  color: #111111 !important;
+}
+.liquid-html-content.theme-sepia pre code.s,
+.liquid-html-content.theme-sepia pre code.s1,
+.liquid-html-content.theme-sepia pre code.s2,
+.liquid-html-content.theme-sepia pre code.sb,
+.liquid-html-content.theme-sepia pre code.sc,
+.liquid-html-content.theme-sepia pre code.sx {
+  color: #222222 !important;
+}
+.liquid-html-content.theme-sepia pre code.nt,
+.liquid-html-content.theme-sepia pre code.na,
+.liquid-html-content.theme-sepia pre code.nc,
+.liquid-html-content.theme-sepia pre code.nn {
+  color: #000000 !important;
+  font-weight: 700 !important;
+}
+.liquid-html-content.theme-sepia pre code.k,
+.liquid-html-content.theme-sepia pre code.kd,
+.liquid-html-content.theme-sepia pre code.kn,
+.liquid-html-content.theme-sepia pre code.kr,
+.liquid-html-content.theme-sepia pre code.kc,
+.liquid-html-content.theme-sepia pre code.kt {
+  color: #000000 !important;
+  font-weight: 800 !important;
+}
+.liquid-html-content.theme-sepia pre code.m,
+.liquid-html-content.theme-sepia pre code.mi,
+.liquid-html-content.theme-sepia pre code.mf,
+.liquid-html-content.theme-sepia pre code.mo {
+  color: #222222 !important;
+}
+.liquid-html-content.theme-sepia pre code.c,
+.liquid-html-content.theme-sepia pre code.c1,
+.liquid-html-content.theme-sepia pre code.cm,
+.liquid-html-content.theme-sepia pre code.cp,
+.liquid-html-content.theme-sepia pre code.cs {
+  color: #666666 !important;
+  font-style: italic !important;
+}
+.liquid-html-content.theme-sepia pre code.p,
+.liquid-html-content.theme-sepia pre code.o {
+  color: #333333 !important;
+}
+
+/* ── Interactive & Exercise Blocks (e.g. Git [ FOLLOW ALONG ] & Step Badges) ── */
+.liquid-html-content div.follow-along,
+.liquid-html-content div[data-type="sidebar"].follow-along {
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin: 2rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+}
+.liquid-html-content.theme-sepia div.follow-along,
+.liquid-html-content.theme-sepia div[data-type="sidebar"].follow-along {
+  border: 1px solid #ede4d3 !important;
+  background: #f4ede0 !important;
+}
+
+/* Step Badges (Brown / Accent square or round badges 1, 2, 3...) */
+.liquid-html-content span.step-number,
+.liquid-html-content span.badge-number,
+.liquid-html-content p > span:first-child[class*="number"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.4rem;
+  border-radius: 0.375rem;
+  background: #b45309;
+  color: #ffffff !important;
+  font-weight: 700;
+  font-size: 0.82rem;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+}
+
+/* Terminal Prompts (friend-rainbow $, rainbow $, mysql>) */
+.liquid-html-content .terminal-prompt {
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+/* ── Universal Callout Blocks (Notes, Tips, Cautions, Warnings, Sidebars) ── */
+.liquid-html-content div.Note,
+.liquid-html-content div.Tip,
+.liquid-html-content div.Caution,
+.liquid-html-content div.Warning,
+.liquid-html-content div.CPPNote,
+.liquid-html-content div.Preview,
+.liquid-html-content div[data-type="note"],
+.liquid-html-content div[data-type="tip"],
+.liquid-html-content div[data-type="warning"],
+.liquid-html-content section[data-type="sidebar"] {
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  margin: 2rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+}
+
+/* Notes: Clean enclosed border */
+.liquid-html-content div.Note,
+.liquid-html-content div[data-type="note"] {
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+.liquid-html-content div.Note > p:first-child::before,
+.liquid-html-content div[data-type="note"] > p:first-child::before {
+  content: 'NOTE  ';
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+/* Tips: Clean enclosed border */
+.liquid-html-content div.Tip,
+.liquid-html-content div[data-type="tip"] {
+  background: rgba(52, 211, 153, 0.05);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+}
+.liquid-html-content div.Tip > p:first-child::before,
+.liquid-html-content div[data-type="tip"] > p:first-child::before {
+  content: 'TIP  ';
+  font-weight: 700;
+  color: #34d399;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+/* Cautions & Warnings: Clean enclosed border */
+.liquid-html-content div.Caution,
+.liquid-html-content div.Warning,
+.liquid-html-content div[data-type="warning"] {
+  background: rgba(251, 191, 36, 0.05);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+}
+.liquid-html-content div.Caution > p:first-child::before,
+.liquid-html-content div.Warning > p:first-child::before,
+.liquid-html-content div[data-type="warning"] > p:first-child::before {
+  content: 'CAUTION  ';
+  font-weight: 700;
+  color: #fbbf24;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+/* Language Notes */
+.liquid-html-content div.CPPNote {
+  background: rgba(148, 163, 184, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+.liquid-html-content div.CPPNote > p:first-child::before {
+  content: 'LANGUAGE NOTE  ';
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+/* Sidebars / Question Inquiries */
+.liquid-html-content section[data-type="sidebar"],
+.liquid-html-content div[data-type="sidebar"] {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 0.5rem;
+  padding: 1.25rem 1.5rem;
+}
+.liquid-html-content section[data-type="sidebar"] h6,
+.liquid-html-content div[data-type="sidebar"] h6,
+.liquid-html-content section[data-type="sidebar"] .title {
+  color: #e2e8f0;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Pure Monochrome Callouts & Tables for Theme Sepia ── */
+.liquid-html-content.theme-sepia div.Note,
+.liquid-html-content.theme-sepia div.Tip,
+.liquid-html-content.theme-sepia div.Caution,
+.liquid-html-content.theme-sepia div.Warning,
+.liquid-html-content.theme-sepia div.CPPNote,
+.liquid-html-content.theme-sepia div.Preview,
+.liquid-html-content.theme-sepia div[data-type="note"],
+.liquid-html-content.theme-sepia div[data-type="tip"],
+.liquid-html-content.theme-sepia div[data-type="warning"],
+.liquid-html-content.theme-sepia section[data-type="sidebar"],
+.liquid-html-content.theme-sepia div[data-type="sidebar"] {
+  background: #f5eedf !important;
+  border: 1px solid #e2dac9 !important;
+}
+
+.liquid-html-content.theme-sepia div.Note > p:first-child::before,
+.liquid-html-content.theme-sepia div[data-type="note"] > p:first-child::before,
+.liquid-html-content.theme-sepia div.Tip > p:first-child::before,
+.liquid-html-content.theme-sepia div[data-type="tip"] > p:first-child::before,
+.liquid-html-content.theme-sepia div.Caution > p:first-child::before,
+.liquid-html-content.theme-sepia div.Warning > p:first-child::before,
+.liquid-html-content.theme-sepia div[data-type="warning"] > p:first-child::before,
+.liquid-html-content.theme-sepia div.CPPNote > p:first-child::before,
+.liquid-html-content.theme-sepia section[data-type="sidebar"] h6,
+.liquid-html-content.theme-sepia div[data-type="sidebar"] h6,
+.liquid-html-content.theme-sepia section[data-type="sidebar"] .title {
+  color: #2d261e !important;
+  font-weight: 700 !important;
+}
+
+.liquid-html-content.theme-sepia span.step-number,
+.liquid-html-content.theme-sepia span.badge-number {
+  background: #222222 !important;
+  color: #ffffff !important;
+}
+
+.liquid-html-content.theme-sepia .terminal-prompt {
+  color: #111111 !important;
+  font-weight: 700 !important;
+}
+
+/* ── Tables & Exam Objectives (e.g. Oracle OCP Objectives Table) ── */
+.liquid-html-content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 2rem 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.liquid-html-content.theme-light table {
+  border-color: #cbd5e1;
+}
+
+.liquid-html-content th,
+.liquid-html-content thead tr,
+.liquid-html-content table tr.table-header,
+.liquid-html-content table tr:first-child:has(th) {
+  background: #1e293b;
+  padding: 0.85rem 1.25rem;
+  font-weight: 700;
+  text-align: left;
+  font-size: 0.88rem;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.liquid-html-content.theme-light th {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-bottom-color: #cbd5e1;
+}
+.liquid-html-content.theme-sepia th {
+  background: #dfe3e8;
+  color: #0f141a;
+  border-bottom-color: #cbd2d9;
+}
+
+.liquid-html-content td {
+  padding: 0.85rem 1.25rem;
+  font-size: 0.9em;
+  line-height: 1.65;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: top;
+}
+.liquid-html-content.theme-light td {
+  border-bottom-color: #f1f5f9;
+}
+.liquid-html-content.theme-sepia td {
+  border-bottom-color: #e2e5ea;
+}
+
+.liquid-html-content tr:last-child td {
+  border-bottom: none;
+}
+
+.liquid-html-content tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Special Circle Bullets in Exam Objectives (❍) */
+.liquid-html-content ul {
+  padding-left: 1.75rem;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+.liquid-html-content li {
+  margin-top: 0.4em;
+  margin-bottom: 0.4em;
+  line-height: 1.75;
+}
+
+/* Figures & Images */
+.liquid-html-content div.figure {
+  margin: 2.5rem 0;
+  text-align: center;
+}
+.liquid-html-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  margin: 0 auto;
+  display: block;
+}
+.liquid-html-content div.figure div {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* Hide O'Reilly index markers */
+.liquid-html-content span.indexterm {
+  display: none !important;
+}
+
