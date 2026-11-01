@@ -151,6 +151,15 @@ export default function BookDetailClient({ params }: { params: Promise<{ id: str
                 <span>HTML</span>
               </Link>
             )}
+            {!hasPdf && !hasWeb && (
+              <Link
+                href={`/books/${book.id}/read`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white transition-colors"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Read</span>
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -263,6 +272,15 @@ export default function BookDetailClient({ params }: { params: Promise<{ id: str
                       className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 transition-colors cursor-pointer"
                     >
                       <span>Web HTML Edition</span>
+                    </Link>
+                  )}
+                  {!hasPdf && !hasWeb && (
+                    <Link
+                      href={`/books/${book.id}/read`}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-xs bg-sky-600 hover:bg-sky-500 text-white transition-colors cursor-pointer"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      <span>Start Reading</span>
                     </Link>
                   )}
                 </div>

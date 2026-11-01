@@ -139,6 +139,16 @@ export default function BookCard({ book }: BookCardProps) {
                 HTML
               </Link>
             )}
+
+            {!hasPdf && !hasWeb && (
+              <Link
+                href={`/books/${book.id}/read`}
+                className="flex-1 flex items-center justify-center py-1 px-2 rounded text-[10px] font-medium bg-sky-600 hover:bg-sky-500 text-white border border-sky-500/80 transition-colors text-center"
+                title="Read Book"
+              >
+                Read
+              </Link>
+            )}
           </div>
         </div>
       </div>

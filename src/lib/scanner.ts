@@ -775,13 +775,19 @@ export function scanBooks(dir?: string, forceRefresh = false): Book[] {
 
   if (!fs.existsSync(booksRoot)) {
     try {
-      const fallbackFile = path.resolve(process.cwd(), 'data/books.json');
-      if (fs.existsSync(fallbackFile)) {
-        const raw = fs.readFileSync(fallbackFile, 'utf-8');
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          catalogCache.set(booksRoot, parsed);
-          return parsed;
+      const fallbackPaths = [
+        path.resolve(process.cwd(), 'src/data/books.json'),
+        path.resolve(process.cwd(), 'public/data/books.json'),
+        path.resolve(process.cwd(), 'data/books.json'),
+      ];
+      for (const fallbackFile of fallbackPaths) {
+        if (fs.existsSync(fallbackFile)) {
+          const raw = fs.readFileSync(fallbackFile, 'utf-8');
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            catalogCache.set(booksRoot, parsed);
+            return parsed;
+          }
         }
       }
     } catch {
