@@ -135,29 +135,21 @@ export default function BookDetailClient({ params }: { params: Promise<{ id: str
           </span>
 
           <div className="flex items-center gap-2">
-            {hasPdf && (
+            {book.format === 'pdf' || (!book.hasFullHtml && (!book.htmlChaptersCount || book.htmlChaptersCount === 0)) ? (
               <Link
                 href={pdfReadHref}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white transition-colors"
-              >
-                <span>Read PDF</span>
-              </Link>
-            )}
-            {hasWeb && (
-              <Link
-                href={webReadHref}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 transition-colors"
-              >
-                <span>HTML</span>
-              </Link>
-            )}
-            {!hasPdf && !hasWeb && (
-              <Link
-                href={`/books/${book.id}/read`}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-sky-600 hover:bg-sky-500 text-white transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-sky-600 hover:bg-sky-500 text-white transition-colors"
               >
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>Read</span>
+                <span>Read PDF</span>
+              </Link>
+            ) : (
+              <Link
+                href={webReadHref}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 transition-colors"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-sky-400" />
+                <span>Read HTML</span>
               </Link>
             )}
           </div>
@@ -257,30 +249,21 @@ export default function BookDetailClient({ params }: { params: Promise<{ id: str
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
-                  {hasPdf && (
+                  {book.format === 'pdf' || (!book.hasFullHtml && (!book.htmlChaptersCount || book.htmlChaptersCount === 0)) ? (
                     <Link
                       href={pdfReadHref}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-xs bg-sky-600 hover:bg-sky-500 text-white transition-colors cursor-pointer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-xs bg-sky-600 hover:bg-sky-500 text-white transition-colors cursor-pointer shadow-md"
                     >
                       <BookOpen className="w-4 h-4" />
                       <span>Read PDF Document</span>
                     </Link>
-                  )}
-                  {hasWeb && (
+                  ) : (
                     <Link
                       href={webReadHref}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 transition-colors cursor-pointer"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 transition-colors cursor-pointer shadow-md"
                     >
-                      <span>Web HTML Edition</span>
-                    </Link>
-                  )}
-                  {!hasPdf && !hasWeb && (
-                    <Link
-                      href={`/books/${book.id}/read`}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-xs bg-sky-600 hover:bg-sky-500 text-white transition-colors cursor-pointer"
-                    >
-                      <BookOpen className="w-4 h-4" />
-                      <span>Start Reading</span>
+                      <BookOpen className="w-4 h-4 text-sky-400" />
+                      <span>Read Web Version</span>
                     </Link>
                   )}
                 </div>
@@ -327,7 +310,7 @@ export default function BookDetailClient({ params }: { params: Promise<{ id: str
                 return (
                   <Link
                     key={ch.id}
-                    href={`/books/${book.id}/read?chapter=${encodeURIComponent(ch.id)}&format=${ch.hasPdf ? 'pdf' : 'html'}`}
+                    href={`/books/${book.id}/read?chapter=${encodeURIComponent(ch.id)}&format=${book.format === 'pdf' ? 'pdf' : 'html'}`}
                     className="group bg-[#0f141d] hover:bg-[#161c28] border border-white/[0.06] hover:border-white/20 rounded-lg p-3.5 flex items-center justify-between gap-3 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -340,12 +323,12 @@ export default function BookDetailClient({ params }: { params: Promise<{ id: str
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                      {ch.hasPdf ? (
+                      {book.format === 'pdf' ? (
                         <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-sky-950/80 text-sky-200 border border-sky-800/60">
                           PDF
                         </span>
                       ) : (
-                        <span className="px-1.5 py-0.5 rounded text-[9.5px] font-medium bg-neutral-900 text-neutral-400 border border-neutral-800">
+                        <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-neutral-900 text-neutral-300 border border-neutral-800">
                           HTML
                         </span>
                       )}

@@ -41,6 +41,7 @@ export interface Book {
   storagePath?: string;     // Filesystem path
   htmlChaptersCount?: number; // Number of chapters with HTML available
   hasFullHtml?: boolean;      // True if all chapters have HTML available
+  format?: 'pdf' | 'html';    // Explicit format type for the book edition
 }
 
 export interface BookProgress {

@@ -766,6 +766,92 @@ export function findLocalBookCover(storagePath: string, bookId: string): string 
   return undefined;
 }
 
+function buildEditionChapters(
+  fileList: string[],
+  fullPath: string,
+  folderName: string,
+  mode: 'pdf' | 'html'
+): { chapters: Chapter[]; totalPages: number; totalSize: number } {
+  const rawChapters = fileList.map(file => {
+    const primaryPath = path.join(fullPath, file);
+    const sortKey = getChapterSortKey(file, folderName);
+    const stat = fs.existsSync(primaryPath) ? fs.statSync(primaryPath) : { size: 0 };
+
+    let pageCount = 0;
+    if (mode === 'pdf') {
+      pageCount = getPdfPageCount(primaryPath);
+      if (/^(?:(?:part\s+)?(X{0,3}(?:IX|IV|V|V?I{1,3}))\.\s+|part\s+\d+[._\s]+)/i.test(file)) {
+        const dynPos = getPartPositionFromPdf(primaryPath);
+        if (dynPos !== null) {
+          sortKey.number = dynPos;
+        }
+      }
+    } else {
+      pageCount = Math.max(3, Math.round(stat.size / 15000));
+    }
+
+    return {
+      filename: file,
+      htmlFilename: mode === 'html' ? file : undefined,
+      pdfFilename: mode === 'pdf' ? file : undefined,
+      hasHtml: mode === 'html',
+      hasPdf: mode === 'pdf',
+      format: mode,
+      sortKey,
+      stat,
+      pageCount,
+    };
+  });
+
+  rawChapters.sort((a, b) => {
+    if (a.sortKey.priority !== b.sortKey.priority) {
+      return a.sortKey.priority - b.sortKey.priority;
+    }
+    if (a.sortKey.number !== b.sortKey.number) {
+      return a.sortKey.number - b.sortKey.number;
+    }
+    return a.sortKey.title.localeCompare(b.sortKey.title);
+  });
+
+  let totalPages = 0;
+  let totalSize = 0;
+  const seenIds = new Set<string>();
+  const chapters: Chapter[] = rawChapters.map((rc, idx) => {
+    totalPages += rc.pageCount;
+    totalSize += rc.stat.size;
+
+    let baseId = makeId(rc.sortKey.title);
+    if (!baseId) {
+      baseId = `chapter-${idx + 1}`;
+    }
+    let uniqueId = baseId;
+    let counter = 2;
+    while (seenIds.has(uniqueId)) {
+      uniqueId = `${baseId}-${counter}`;
+      counter++;
+    }
+    seenIds.add(uniqueId);
+
+    return {
+      id: uniqueId,
+      title: rc.sortKey.title,
+      filename: rc.filename,
+      order: idx + 1,
+      priority: rc.sortKey.priority,
+      chapterNumber: rc.sortKey.priority === 4 ? rc.sortKey.number : undefined,
+      pageCount: rc.pageCount,
+      fileSize: rc.stat.size,
+      htmlFilename: rc.htmlFilename,
+      pdfFilename: rc.pdfFilename,
+      hasHtml: rc.hasHtml,
+      hasPdf: rc.hasPdf,
+      format: rc.format,
+    };
+  });
+
+  return { chapters, totalPages, totalSize };
+}
+
 export function scanBooks(dir?: string, forceRefresh = false): Book[] {
   const booksRoot = path.resolve(dir || getBooksRoot());
 
@@ -816,181 +902,73 @@ export function scanBooks(dir?: string, forceRefresh = false): Book[] {
 
       if (pdfFiles.length === 0 && htmlFiles.length === 0) continue;
 
-      // Group chapters by normalized base name (without extension)
-      const cleanBase = (n: string) => n.replace(/\.(pdf|html|htm)$/i, '').trim();
-      const chapterGroupMap = new Map<string, { htmlFile?: string; pdfFile?: string; baseName: string }>();
-
-      // Record HTML files first (prioritizing HTML)
-      for (const hf of htmlFiles) {
-        const base = cleanBase(hf);
-        const key = base.toLowerCase();
-        if (!chapterGroupMap.has(key)) {
-          chapterGroupMap.set(key, { htmlFile: hf, baseName: base });
-        } else {
-          chapterGroupMap.get(key)!.htmlFile = hf;
-        }
-      }
-
-      // Match or add PDF files
-      if (htmlFiles.length === 0) {
-        // Pure PDF book: all PDF files are chapters
-        for (const pf of pdfFiles) {
-          const base = cleanBase(pf);
-          const key = base.toLowerCase();
-          if (!chapterGroupMap.has(key)) {
-            chapterGroupMap.set(key, { pdfFile: pf, baseName: base });
-          } else {
-            chapterGroupMap.get(key)!.pdfFile = pf;
-          }
-        }
-      } else {
-        // Book has HTML chapters: HTML is the canonical source of truth for chapters!
-        // Never add unmatched or differently-named PDF files (e.g. code snippets, full book PDFs) as duplicate chapters.
-        for (const pf of pdfFiles) {
-          const base = cleanBase(pf);
-          const key = base.toLowerCase();
-
-          // 1. Direct match
-          if (chapterGroupMap.has(key)) {
-            chapterGroupMap.get(key)!.pdfFile = pf;
-            continue;
-          }
-
-          // 2. Normalized code snippets match (e.g. "Effective Java, 3rd Edition code snippets 2.pdf" -> "code snippets 2")
-          const snippetMatch = key.match(/(code\s*snippets(?:\s*\d+)?)/i);
-          if (snippetMatch) {
-            const snipKey = snippetMatch[1].toLowerCase();
-            if (chapterGroupMap.has(snipKey)) {
-              chapterGroupMap.get(snipKey)!.pdfFile = pf;
-              continue;
-            }
-          }
-
-          // 3. Match by removing book title/folder prefix (e.g. "Effective Java, 3rd Edition ...")
-          const stripped = key.replace(/^[a-z0-9\s,._-]+?_\s*/i, '').trim();
-          if (stripped && chapterGroupMap.has(stripped)) {
-            chapterGroupMap.get(stripped)!.pdfFile = pf;
-          }
-        }
-      }
-
-      const chapterGroups = Array.from(chapterGroupMap.values());
-
-      // Deterministic 8-tier sort with dynamic Part positioning
-      const rawChapters = chapterGroups.map(group => {
-        // Representative filename: prioritize PDF file as default, else HTML
-        const primaryFile = group.pdfFile || group.htmlFile!;
-        const primaryPath = path.join(fullPath, primaryFile);
-        const sortKey = getChapterSortKey(primaryFile, entry.name);
-        const stat = fs.existsSync(primaryPath) ? fs.statSync(primaryPath) : { size: 0 };
-
-        let pageCount = 0;
-        if (group.pdfFile) {
-          const pdfPath = path.join(fullPath, group.pdfFile);
-          pageCount = getPdfPageCount(pdfPath);
-        } else {
-          // Estimate page count for HTML (roughly 1 page per 15KB or min 3 pages)
-          pageCount = Math.max(3, Math.round(stat.size / 15000));
-        }
-
-        // Dynamically refine Roman/Arabic Part positions relative to adjacent chapters
-        if (/^(?:(?:part\s+)?(X{0,3}(?:IX|IV|V|V?I{1,3}))\.\s+|part\s+\d+[._\s]+)/i.test(primaryFile)) {
-          if (group.pdfFile) {
-            const dynPos = getPartPositionFromPdf(path.join(fullPath, group.pdfFile));
-            if (dynPos !== null) {
-              sortKey.number = dynPos;
-            }
-          }
-        }
-
-        return {
-          filename: primaryFile,
-          htmlFilename: group.htmlFile,
-          pdfFilename: group.pdfFile,
-          hasHtml: Boolean(group.htmlFile),
-          hasPdf: Boolean(group.pdfFile),
-          format: group.pdfFile ? ('pdf' as const) : ('html' as const),
-          sortKey,
-          stat,
-          pageCount,
-        };
-      });
-
-      rawChapters.sort((a, b) => {
-        if (a.sortKey.priority !== b.sortKey.priority) {
-          return a.sortKey.priority - b.sortKey.priority;
-        }
-        if (a.sortKey.number !== b.sortKey.number) {
-          return a.sortKey.number - b.sortKey.number;
-        }
-        return a.sortKey.title.localeCompare(b.sortKey.title);
-      });
-
-      // Assign sequential monotonic 1-based order and collision-free IDs
-      let totalPages = 0;
-      let totalSize = 0;
-      let htmlChaptersCount = 0;
-      const seenIds = new Set<string>();
-      const chapters: Chapter[] = rawChapters.map((rc, idx) => {
-        totalPages += rc.pageCount;
-        totalSize += rc.stat.size;
-        if (rc.hasHtml) htmlChaptersCount++;
-
-        let baseId = makeId(rc.sortKey.title);
-        if (!baseId) {
-          baseId = `chapter-${idx + 1}`;
-        }
-        let uniqueId = baseId;
-        let counter = 2;
-        while (seenIds.has(uniqueId)) {
-          uniqueId = `${baseId}-${counter}`;
-          counter++;
-        }
-        seenIds.add(uniqueId);
-
-        return {
-          id: uniqueId,
-          title: rc.sortKey.title,
-          filename: rc.filename,
-          order: idx + 1,
-          priority: rc.sortKey.priority,
-          chapterNumber: rc.sortKey.priority === 4 ? rc.sortKey.number : undefined,
-          pageCount: rc.pageCount,
-          fileSize: rc.stat.size,
-          htmlFilename: rc.htmlFilename,
-          pdfFilename: rc.pdfFilename,
-          hasHtml: rc.hasHtml,
-          hasPdf: rc.hasPdf,
-          format: rc.format,
-        };
-      });
-
-      const bookId = makeId(entry.name);
+      const baseBookId = makeId(entry.name);
       const meta = inferBookMeta(entry.name);
-      const localCover = findLocalBookCover(fullPath, bookId);
-      const resolvedCover = localCover || BOOK_COVERS[bookId];
+      const hasBoth = htmlFiles.length > 0 && pdfFiles.length > 0;
 
-      books.push({
-        id: bookId,
-        title: meta.title,
-        author: meta.author,
-        publisher: meta.publisher,
-        edition: meta.edition,
-        volume: meta.volume,
-        description: `${meta.title} — ${chapters.length} chapters, ${totalPages} pages`,
-        coverColor: pickColor(colorIdx++),
-        coverUrl: resolvedCover || undefined,
-        tags: meta.tags,
-        isMultiChapter: true,
-        chapters,
-        folder: entry.name,
-        totalPages,
-        totalSize,
-        addedAt: new Date().toISOString(),
-        storagePath: fullPath,
-        htmlChaptersCount,
-        hasFullHtml: htmlChaptersCount === chapters.length && chapters.length > 0,
-      });
+      // 1. Separate Web / HTML Edition if folder contains HTML files
+      if (htmlFiles.length > 0) {
+        const { chapters: htmlChapters, totalPages: htmlPages, totalSize: htmlSize } =
+          buildEditionChapters(htmlFiles, fullPath, entry.name, 'html');
+        const webBookId = hasBoth ? `${baseBookId}-web` : baseBookId;
+        const localCover = findLocalBookCover(fullPath, baseBookId);
+        const resolvedCover = localCover || BOOK_COVERS[webBookId] || BOOK_COVERS[baseBookId];
+
+        books.push({
+          id: webBookId,
+          title: meta.title,
+          author: meta.author,
+          publisher: meta.publisher,
+          edition: meta.edition,
+          volume: meta.volume,
+          description: `${meta.title} — ${htmlChapters.length} chapters, ${htmlPages} pages`,
+          coverColor: pickColor(colorIdx++),
+          coverUrl: resolvedCover || undefined,
+          tags: meta.tags,
+          isMultiChapter: true,
+          chapters: htmlChapters,
+          folder: entry.name,
+          totalPages: htmlPages,
+          totalSize: htmlSize,
+          addedAt: new Date().toISOString(),
+          storagePath: fullPath,
+          htmlChaptersCount: htmlChapters.length,
+          hasFullHtml: true,
+          format: 'html',
+        });
+      }
+
+      // 2. Separate PDF Edition if folder contains PDF files
+      if (pdfFiles.length > 0) {
+        const { chapters: pdfChapters, totalPages: pdfPages, totalSize: pdfSize } =
+          buildEditionChapters(pdfFiles, fullPath, entry.name, 'pdf');
+        const pdfBookId = hasBoth ? `${baseBookId}-pdf` : baseBookId;
+        const localCover = findLocalBookCover(fullPath, baseBookId);
+        const resolvedCover = localCover || BOOK_COVERS[pdfBookId] || BOOK_COVERS[baseBookId];
+
+        books.push({
+          id: pdfBookId,
+          title: meta.title,
+          author: meta.author,
+          publisher: meta.publisher,
+          edition: meta.edition,
+          volume: meta.volume,
+          description: `${meta.title} — ${pdfChapters.length} chapters, ${pdfPages} pages`,
+          coverColor: pickColor(colorIdx++),
+          coverUrl: resolvedCover || undefined,
+          tags: meta.tags,
+          isMultiChapter: pdfChapters.length > 1,
+          chapters: pdfChapters,
+          folder: entry.name,
+          totalPages: pdfPages,
+          totalSize: pdfSize,
+          addedAt: new Date().toISOString(),
+          storagePath: fullPath,
+          htmlChaptersCount: 0,
+          hasFullHtml: false,
+          format: 'pdf',
+        });
+      }
     } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.pdf')) {
       // Standalone single-file PDF
       try {
@@ -998,9 +976,10 @@ export function scanBooks(dir?: string, forceRefresh = false): Book[] {
         const stat = fs.statSync(fullPath);
         const pageCount = getPdfPageCount(fullPath);
         const meta = inferBookMeta(entry.name);
+        const bookId = makeId(entry.name);
 
         books.push({
-          id: makeId(entry.name),
+          id: bookId,
           title: meta.title,
           author: meta.author,
           publisher: meta.publisher,
@@ -1008,6 +987,7 @@ export function scanBooks(dir?: string, forceRefresh = false): Book[] {
           volume: meta.volume,
           description: `${meta.title} — ${pageCount} pages (${(stat.size / 1024 / 1024).toFixed(1)} MB)`,
           coverColor: pickColor(colorIdx++),
+          coverUrl: BOOK_COVERS[bookId],
           tags: meta.tags,
           isMultiChapter: false,
           filename: entry.name,
@@ -1015,6 +995,7 @@ export function scanBooks(dir?: string, forceRefresh = false): Book[] {
           totalSize: stat.size,
           addedAt: new Date().toISOString(),
           storagePath: fullPath,
+          format: 'pdf',
         });
       } catch {
         // File may have been removed concurrently in test suite
@@ -1028,7 +1009,12 @@ export function scanBooks(dir?: string, forceRefresh = false): Book[] {
     const rankA = getJavaLearningRank(a);
     const rankB = getJavaLearningRank(b);
     if (rankA !== rankB) return rankA - rankB;
-    return a.title.localeCompare(b.title);
+    const titleCmp = a.title.localeCompare(b.title);
+    if (titleCmp !== 0) return titleCmp;
+    if (a.format !== b.format) {
+      return a.format === 'html' ? -1 : 1;
+    }
+    return a.id.localeCompare(b.id);
   });
 
   catalogCache.set(booksRoot, books);

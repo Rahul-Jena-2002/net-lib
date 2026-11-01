@@ -38,14 +38,13 @@ export default function BookCard({ book }: BookCardProps) {
         href={`/books/${book.id}`}
         className="block relative aspect-[4/4.5] w-full rounded-md overflow-hidden mb-2 bg-[#0a0d14] border border-white/10 flex items-center justify-center p-1 shrink-0"
       >
-        {/* Cover Format Badges: PDF prioritized as default */}
-        <div className="absolute top-1.5 right-1.5 z-10 flex items-center gap-1">
-          {hasPdf && (
+        {/* Cover Format Badge: Isolated format badge */}
+        <div className="absolute top-1.5 right-1.5 z-10 flex items-center">
+          {book.format === 'pdf' || (!book.hasFullHtml && (!book.htmlChaptersCount || book.htmlChaptersCount === 0)) ? (
             <span className="px-1.5 py-0.5 rounded text-[8.5px] font-semibold tracking-wide bg-sky-950/90 text-sky-200 border border-sky-800/60">
               PDF
             </span>
-          )}
-          {hasWeb && (
+          ) : (
             <span className="px-1.5 py-0.5 rounded text-[8.5px] font-semibold tracking-wide bg-neutral-900/90 text-neutral-300 border border-neutral-700/70">
               HTML
             </span>
@@ -119,34 +118,22 @@ export default function BookCard({ book }: BookCardProps) {
             Details
           </Link>
 
-          <div className="flex-1 flex items-center justify-end gap-1">
-            {hasPdf && (
+          <div className="flex-1 flex items-center justify-end">
+            {book.format === 'pdf' || (!book.hasFullHtml && (!book.htmlChaptersCount || book.htmlChaptersCount === 0)) ? (
               <Link
                 href={pdfUrl}
-                className="flex-1 flex items-center justify-center py-1 px-2 rounded text-[10px] font-medium bg-sky-600 hover:bg-sky-500 text-white border border-sky-500/80 transition-colors text-center"
-                title="Read PDF Edition (Default)"
+                className="w-full flex items-center justify-center py-1 px-2.5 rounded text-[10px] font-semibold bg-sky-600 hover:bg-sky-500 text-white border border-sky-500/80 transition-colors text-center"
+                title="Read PDF Edition"
               >
                 PDF
               </Link>
-            )}
-
-            {hasWeb && (
+            ) : (
               <Link
                 href={webUrl}
-                className="flex-1 flex items-center justify-center py-1 px-2 rounded text-[10px] font-medium bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 transition-colors text-center"
-                title="Read Web HTML"
+                className="w-full flex items-center justify-center py-1 px-2.5 rounded text-[10px] font-semibold bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 transition-colors text-center"
+                title="Read Web HTML Edition"
               >
                 HTML
-              </Link>
-            )}
-
-            {!hasPdf && !hasWeb && (
-              <Link
-                href={`/books/${book.id}/read`}
-                className="flex-1 flex items-center justify-center py-1 px-2 rounded text-[10px] font-medium bg-sky-600 hover:bg-sky-500 text-white border border-sky-500/80 transition-colors text-center"
-                title="Read Book"
-              >
-                Read
               </Link>
             )}
           </div>

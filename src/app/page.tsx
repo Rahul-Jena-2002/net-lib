@@ -30,11 +30,11 @@ export default function HomePage() {
   const [cols, setCols] = useState(6);
 
   const webCount = useMemo(
-    () => books.filter(b => b.hasFullHtml || (b.htmlChaptersCount && b.htmlChaptersCount > 0)).length,
+    () => books.filter(b => b.format === 'html' || b.hasFullHtml).length,
     [books]
   );
   const pdfCount = useMemo(
-    () => books.filter(b => !b.isMultiChapter || b.filename || b.chapters?.some(c => c.hasPdf)).length,
+    () => books.filter(b => b.format === 'pdf' || (!b.format && !b.hasFullHtml)).length,
     [books]
   );
 
@@ -179,9 +179,9 @@ export default function HomePage() {
     }
 
     if (formatFilter === 'web') {
-      result = result.filter(b => b.hasFullHtml || (b.htmlChaptersCount && b.htmlChaptersCount > 0));
+      result = result.filter(b => b.format === 'html' || b.hasFullHtml);
     } else if (formatFilter === 'pdf') {
-      result = result.filter(b => !b.isMultiChapter || b.filename || b.chapters?.some(c => c.hasPdf));
+      result = result.filter(b => b.format === 'pdf' || (!b.format && !b.hasFullHtml));
     }
 
     return result;
