@@ -149,7 +149,7 @@ export default function BookDetailClient({ params }: { params: Promise<{ id: str
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 transition-colors"
               >
                 <BookOpen className="w-3.5 h-3.5 text-sky-400" />
-                <span>Read HTML</span>
+                <span>Read</span>
               </Link>
             )}
           </div>
@@ -263,7 +263,7 @@ export default function BookDetailClient({ params }: { params: Promise<{ id: str
                       className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg font-semibold text-xs bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 transition-colors cursor-pointer shadow-md"
                     >
                       <BookOpen className="w-4 h-4 text-sky-400" />
-                      <span>Read Web Version</span>
+                      <span>Read</span>
                     </Link>
                   )}
                 </div>
@@ -329,7 +329,7 @@ export default function BookDetailClient({ params }: { params: Promise<{ id: str
                         </span>
                       ) : (
                         <span className="px-1.5 py-0.5 rounded text-[9.5px] font-semibold bg-neutral-900 text-neutral-300 border border-neutral-800">
-                          HTML
+                          Web
                         </span>
                       )}
                       {isCompleted && (

@@ -46,7 +46,7 @@ export default function BookCard({ book }: BookCardProps) {
             </span>
           ) : (
             <span className="px-1.5 py-0.5 rounded text-[8.5px] font-semibold tracking-wide bg-neutral-900/90 text-neutral-300 border border-neutral-700/70">
-              HTML
+              Web
             </span>
           )}
         </div>
@@ -131,9 +131,9 @@ export default function BookCard({ book }: BookCardProps) {
               <Link
                 href={webUrl}
                 className="w-full flex items-center justify-center py-1 px-2.5 rounded text-[10px] font-semibold bg-neutral-800 hover:bg-neutral-700 text-neutral-200 border border-neutral-700 transition-colors text-center"
-                title="Read Web HTML Edition"
+                title="Read Edition"
               >
-                HTML
+                Read
               </Link>
             )}
           </div>

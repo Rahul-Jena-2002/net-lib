@@ -549,7 +549,7 @@ function ensureCoverChapter(b: Book): Book {
                                 </span>
                               ) : (
                                 <span className={`px-1.5 py-0.5 rounded text-[9px] font-medium ${isLight ? 'bg-black/[0.05] text-neutral-600 border border-black/10' : 'bg-neutral-800 text-neutral-400 border border-neutral-700'}`}>
-                                  HTML
+                                  Web
                                 </span>
                               )}
 
@@ -613,9 +613,9 @@ function ensureCoverChapter(b: Book): Book {
                       ? 'text-neutral-700 hover:text-black'
                       : 'text-neutral-400 hover:text-white'
                   }`}
-                  title="Web HTML Reader"
+                  title="Web Reader"
                 >
-                  HTML
+                  Web
                 </button>
               </div>
             )}
