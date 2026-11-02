@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 432 251.62">
+  <defs>
+    <style>
+      @import url("../../css/svgfonts.css");
+      .cls-1 {
+        stroke-dasharray: 0 0 2 2;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5, .cls-6, .cls-7, .cls-8 {
+        fill: none;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-5, .cls-7, .cls-8 {
+        stroke-miterlimit: 8;
+      }
+
+      .cls-1, .cls-3, .cls-4, .cls-7 {
+        stroke-width: .75px;
+      }
+
+      .cls-1, .cls-5, .cls-7, .cls-8 {
+        stroke: #082533;
+      }
+
+      .cls-2, .cls-3 {
+        stroke: #7f8080;
+      }
+
+      .cls-2, .cls-8 {
+        stroke-width: 1.5px;
+      }
+
+      .cls-9 {
+        letter-spacing: 0em;
+      }
+
+      .cls-9, .cls-10, .cls-11, .cls-12, .cls-13, .cls-14, .cls-15, .cls-16 {
+        fill: #000;
+      }
+
+      .cls-9, .cls-12 {
+        font-family: Mono;
+        font-size: 7.23px;
+      }
+
+      .cls-9, .cls-12, .cls-16 {
+        font-weight: 700;
+      }
+
+      .cls-10 {
+        letter-spacing: 0em;
+      }
+
+      .cls-10, .cls-11, .cls-13, .cls-17, .cls-14, .cls-18, .cls-15, .cls-16, .cls-19 {
+        font-size: 8px;
+      }
+
+      .cls-10, .cls-11, .cls-13, .cls-17, .cls-14, .cls-18, .cls-15, .cls-19 {
+        font-family: SansSerif, Helvetica, Helvetica;
+      }
+
+      .cls-4, .cls-6 {
+        stroke: #010101;
+        stroke-miterlimit: 10;
+      }
+
+      .cls-11, .cls-20 {
+        letter-spacing: 0em;
+      }
+
+      .cls-21, .cls-17, .cls-15 {
+        letter-spacing: 0em;
+      }
+
+      .cls-12 {
+        letter-spacing: 0em;
+      }
+
+      .cls-13 {
+        letter-spacing: -.01em;
+      }
+
+      .cls-17, .cls-18, .cls-19 {
+        fill: #7f8080;
+      }
+
+      .cls-14, .cls-18 {
+        letter-spacing: 0em;
+      }
+
+      .cls-22 {
+        fill: #010101;
+      }
+
+      .cls-22, .cls-23, .cls-24 {
+        stroke-width: 0px;
+      }
+
+      .cls-23 {
+        fill: #f3f3f3;
+      }
+
+      .cls-5, .cls-6 {
+        stroke-width: 2.5px;
+      }
+
+      .cls-16 {
+        font-family: SansSerif, Helvetica-Bold, Helvetica;
+        font-weight: bold;
+      }
+
+      .cls-24 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <rect class="cls-5" x="41.78" y="31.5" width="171.97" height="218.87"/>
+  <text class="cls-16" transform="translate(45.69 42.44)"><tspan x="0" y="0">module com.horstmann.greet</tspan></text>
+  <rect class="cls-8" x="58.47" y="80.85" width="118.93" height="82.32"/>
+  <text class="cls-15" transform="translate(61.19 90.29)"><tspan x="0" y="0">package com.horstmann.greet</tspan></text>
+  <rect class="cls-7" x="65.72" y="98.16" width="76.98" height="56.87"/>
+  <text class="cls-10" transform="translate(69.25 107.91)"><tspan x="0" y="0">interface Greeter</tspan></text>
+  <text class="cls-10" transform="translate(75.38 128.87)"><tspan x="0" y="0">newInstance()</tspan></text>
+  <text class="cls-10" transform="translate(75.38 145.7)"><tspan x="0" y="0">greet()</tspan></text>
+  <rect class="cls-23" x="58.32" y="176.49" width="146.69" height="62.6"/>
+  <rect class="cls-2" x="58.32" y="176.49" width="146.69" height="62.6"/>
+  <text class="cls-17" transform="translate(61.19 185.92)"><tspan x="0" y="0">package com.horstmann.greet.internal</tspan></text>
+  <rect class="cls-3" x="67.83" y="193.01" width="76.91" height="40.69"/>
+  <text class="cls-18" transform="translate(71 202.77)"><tspan x="0" y="0">class GreeterImpl</tspan></text>
+  <rect class="cls-3" x="72.13" y="215.09" width="61.41" height="14.11" rx="2.35" ry="2.35"/>
+  <text class="cls-17" transform="translate(75.9 224.91)"><tspan x="0" y="0">greet()</tspan></text>
+  <rect class="cls-5" x="292.02" y="31.5" width="134.92" height="138.2"/>
+  <text class="cls-16" transform="translate(295.33 42.11)"><tspan x="0" y="0">module ch12.sec05</tspan></text>
+  <rect class="cls-8" x="303.01" y="80.85" width="116.75" height="80.32"/>
+  <text class="cls-11" transform="translate(306.55 90.62)"><tspan x="0" y="0">package com.horstmann.hello</tspan></text>
+  <rect class="cls-7" x="309.09" y="98.44" width="68.05" height="54.59"/>
+  <text class="cls-14" transform="translate(312.3 108.35)"><tspan x="0" y="0">class HelloWorld</tspan></text>
+  <rect class="cls-7" x="72.13" y="119.54" width="60.67" height="13.42" rx="2.75" ry="2.75"/>
+  <rect class="cls-1" x="72.13" y="136.37" width="60.67" height="13.42" rx="2.75" ry="2.75"/>
+  <g>
+    <rect class="cls-7" x="316.99" y="125.92" width="43.43" height="16.52" rx="2.75" ry="2.75"/>
+    <text class="cls-11" transform="translate(326.98 136.8)"><tspan x="0" y="0">main()</tspan></text>
+  </g>
+  <text class="cls-13" transform="translate(225.12 35.03)"><tspan x="0" y="0">requires module</tspan></text>
+  <text class="cls-10" transform="translate(223.74 83.25)"><tspan x="0" y="0">imports package</tspan></text>
+  <text class="cls-10" transform="translate(121.39 63.16)"><tspan x="0" y="0">exports package</tspan></text>
+  <text class="cls-10" transform="translate(223.04 129.52)"><tspan x="0" y="0">invokes methods</tspan></text>
+  <text class="cls-9" transform="translate(47.13 6.12)"><tspan x="0" y="0">module com.horstmann.greet {</tspan><tspan x="0" y="8.67" xml:space="preserve">    exports com.horstman.greet;</tspan><tspan x="0" y="17.35">}</tspan></text>
+  <text class="cls-12" transform="translate(292.99 6.12)"><tspan x="0" y="0">module ch12.sec05 {</tspan><tspan x="0" y="8.67" xml:space="preserve">    requires com.horstman.greet;</tspan><tspan x="0" y="17.35">}</tspan></text>
+  <text class="cls-19" transform="translate(162.43 207.29)"><tspan class="cls-20"><tspan x="0" y="0">Hidden</tspan></tspan><tspan class="cls-21"><tspan x="0" y="9.91">package</tspan></tspan></text>
+  <g>
+    <line class="cls-4" x1="316.99" y1="134.18" x2="137.8" y2="134.18"/>
+    <polygon class="cls-22" points="138.78 130.81 132.95 134.18 138.78 137.54 138.78 130.81"/>
+  </g>
+  <g>
+    <line class="cls-4" x1="303.01" y1="87.7" x2="182.24" y2="87.7"/>
+    <polygon class="cls-22" points="183.23 84.34 177.4 87.7 183.23 91.07 183.23 84.34"/>
+  </g>
+  <g>
+    <line class="cls-6" x1="292.02" y1="40.27" x2="220.93" y2="40.27"/>
+    <polygon class="cls-22" points="222.39 35.29 213.76 40.27 222.39 45.26 222.39 35.29"/>
+  </g>
+  <g>
+    <polyline class="cls-4" points="72.13 125.74 18.38 125.74 18.38 213.36 62.99 213.36"/>
+    <polygon class="cls-22" points="62 216.72 67.83 213.36 62 209.99 62 216.72"/>
+  </g>
+  <rect class="cls-24" x="14.71" y="156.94" width="8.08" height="20.91"/>
+  <text class="cls-10" transform="translate(0 165.07)"><tspan x="0" y="0">constructs</tspan><tspan x="3.42" y="9.91">instance</tspan></text>
+  <g>
+    <line class="cls-6" x1="117.94" y1="73.68" x2="117.94" y2="44.23"/>
+    <polygon class="cls-22" points="122.92 72.22 117.94 80.85 112.95 72.22 122.92 72.22"/>
+  </g>
+</svg>

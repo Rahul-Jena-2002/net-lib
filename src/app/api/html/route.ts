@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { scanBooks, resolveSafeBookPath } from '@/lib/scanner';
+import { scanBooks, resolveSafeBookPath, BOOKS_ROOT } from '@/lib/scanner';
 import { BOOK_COVERS } from '@/lib/covers';
 import { getCustomCovers } from '@/lib/coversServer';
 
@@ -142,7 +142,10 @@ export async function GET(request: NextRequest) {
     }
 
     let cleanedHtml = '';
-    const filePath = resolveSafeBookPath(htmlFilename, book.storagePath);
+    const bookDir = (book.storagePath && fs.existsSync(book.storagePath))
+      ? book.storagePath
+      : path.join(BOOKS_ROOT, book.folder || (book.storagePath ? path.basename(book.storagePath) : ''));
+    const filePath = resolveSafeBookPath(htmlFilename, bookDir);
     if (fs.existsSync(filePath)) {
       const rawHtml = fs.readFileSync(filePath, 'utf8');
       cleanedHtml = extractAndCleanChapterHtml(rawHtml, book.id);

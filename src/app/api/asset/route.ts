@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { scanBooks, resolveSafeBookPath } from '@/lib/scanner';
+import { scanBooks, resolveSafeBookPath, BOOKS_ROOT } from '@/lib/scanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +35,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Safely resolve the requested asset within the book's directory
-    const resolvedPath = resolveSafeBookPath(relativeFile, book.storagePath);
+    const bookDir = (book.storagePath && fs.existsSync(book.storagePath))
+      ? book.storagePath
+      : path.join(BOOKS_ROOT, book.folder || (book.storagePath ? path.basename(book.storagePath) : ''));
+    const resolvedPath = resolveSafeBookPath(relativeFile, bookDir);
     if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isFile()) {
       return new NextResponse('Asset not found', { status: 404 });
     }
