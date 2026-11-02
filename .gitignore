@@ -34,7 +34,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# books media (ignore heavy pdfs)
-*.pdf
-*.PDF
+# books media (ignore oversized files > 100MB to satisfy GitHub limits)
+head-first-java.pdf
+*head-first-java.pdf
 

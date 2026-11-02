@@ -402,8 +402,22 @@ function ensureCoverChapter(b: Book): Book {
     );
   }
 
+  const bp = (process.env.NEXT_PUBLIC_BASE_PATH || '');
+  let staticPdfUrl = '';
+  if (bp) {
+    const pdfName =
+      activeChapter?.pdfFilename ||
+      (activeChapter?.filename?.toLowerCase().endsWith('.pdf') ? activeChapter?.filename : null) ||
+      (book.filename?.toLowerCase().endsWith('.pdf') ? book.filename : null);
+    if (pdfName) {
+      const folderPart = book.folder ? `${encodeURIComponent(book.folder)}/` : '';
+      staticPdfUrl = `${bp}/books/${folderPart}${encodeURIComponent(pdfName)}`;
+    }
+  }
+
   const pdfStreamUrl =
     activePdfUrl ||
+    staticPdfUrl ||
     (activeChapter
       ? `/api/pdf?book=${encodeURIComponent(book.id)}&chapter=${encodeURIComponent(activeChapter.id)}`
       : `/api/pdf?book=${encodeURIComponent(book.id)}`);
