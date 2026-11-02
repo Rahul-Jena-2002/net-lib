@@ -12,7 +12,7 @@ interface BookCardProps {
 
 export default function BookCard({ book }: BookCardProps) {
   const [imageError, setImageError] = useState(false);
-  const coverUrl = getBookCoverUrl(book.id, book.coverUrl);
+  const coverUrl = getBookCoverUrl(book.id, book.coverUrl, book.folder);
 
   const chapterCount = book.chapters?.length || 0;
   const isMulti = book.isMultiChapter;

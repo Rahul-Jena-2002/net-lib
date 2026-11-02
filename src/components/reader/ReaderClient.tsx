@@ -937,6 +937,9 @@ function ensureCoverChapter(b: Book): Book {
             bookId={book.id}
             chapterId={activeChapter?.id || ''}
             chapterTitle={activeChapter?.title || book.title}
+            bookFolder={book.folder || ''}
+            htmlFilename={activeChapter?.htmlFilename || activeChapter?.filename || ''}
+            coverUrl={book.coverUrl || ''}
             theme={readerTheme}
             fontSize={fontSize}
             readerWidth={readerWidth}

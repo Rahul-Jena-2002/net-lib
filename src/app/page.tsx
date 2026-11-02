@@ -80,24 +80,38 @@ export default function HomePage() {
       else setLoading(true);
 
       let loadedBooks: Book[] = [];
-      try {
-        const res = await fetch(`/api/books${force ? '?refresh=true' : ''}`);
-        if (res.ok) {
-          loadedBooks = await res.json();
-        }
-      } catch {
-        // ignore
-      }
+      const bp = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
-      if (!loadedBooks.length) {
+      if (bp) {
+        // Direct static fetch for GitHub Pages
         try {
-          const fallbackUrl = (process.env.NEXT_PUBLIC_BASE_PATH || '') + '/data/books.json';
-          const res = await fetch(fallbackUrl);
+          const res = await fetch(`${bp}/data/books.json`);
           if (res.ok) {
             loadedBooks = await res.json();
           }
         } catch (err) {
           console.error('Failed to load books catalog:', err);
+        }
+      } else {
+        try {
+          const res = await fetch(`/api/books${force ? '?refresh=true' : ''}`);
+          if (res.ok) {
+            loadedBooks = await res.json();
+          }
+        } catch {
+          // ignore
+        }
+
+        if (!loadedBooks.length) {
+          try {
+            const fallbackUrl = '/data/books.json';
+            const res = await fetch(fallbackUrl);
+            if (res.ok) {
+              loadedBooks = await res.json();
+            }
+          } catch (err) {
+            console.error('Failed to load books catalog:', err);
+          }
         }
       }
 

@@ -93,8 +93,21 @@ export const BOOK_COVERS: Record<string, string> = {
     'https://covers.openlibrary.org/b/id/14840847-L.jpg',
 };
 
-export function getBookCoverUrl(bookId: string, directCoverUrl?: string): string | null {
-  if (directCoverUrl) return directCoverUrl;
+export function getBookCoverUrl(bookId: string, directCoverUrl?: string, bookFolder?: string): string | null {
+  const bp = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_BASE_PATH) || '';
+
+  if (directCoverUrl) {
+    if (directCoverUrl.startsWith('/api/asset')) {
+      const match = directCoverUrl.match(/file=([^&]+)/);
+      const file = match ? decodeURIComponent(match[1]) : '';
+      if (bp && bookFolder && file) {
+        return `${bp}/books/${encodeURIComponent(bookFolder)}/${encodeURIComponent(file)}`;
+      }
+      return BOOK_COVERS[bookId] || (bp && file ? `${bp}/books/${encodeURIComponent(bookFolder || bookId)}/${encodeURIComponent(file)}` : directCoverUrl);
+    }
+    return directCoverUrl;
+  }
+
   if (typeof window !== 'undefined') {
     try {
       const cached = localStorage.getItem(`netlib_cover_${bookId}`);

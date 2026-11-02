@@ -90,7 +90,7 @@ export default function BookDetailClient({ params }: { params: Promise<{ id: str
     );
   }
 
-  const coverUrl = getBookCoverUrl(book.id, book.coverUrl);
+  const coverUrl = getBookCoverUrl(book.id, book.coverUrl, book.folder);
 
   // Resume reading from last chapter or first chapter
   const targetChapterId =

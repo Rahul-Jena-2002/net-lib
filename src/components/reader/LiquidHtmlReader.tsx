@@ -7,10 +7,15 @@ import {
 } from 'lucide-react';
 import type { Theme, FontSize, ReaderWidth } from '@/lib/types';
 
+import { extractAndCleanChapterHtml } from '@/lib/htmlCleaner';
+
 interface LiquidHtmlReaderProps {
   bookId: string;
   chapterId: string;
   chapterTitle: string;
+  bookFolder?: string;
+  htmlFilename?: string;
+  coverUrl?: string;
   theme?: Theme;
   fontSize?: FontSize;
   readerWidth?: ReaderWidth;
@@ -26,6 +31,9 @@ export default function LiquidHtmlReader({
   bookId,
   chapterId,
   chapterTitle,
+  bookFolder,
+  htmlFilename,
+  coverUrl,
   theme = 'dark',
   fontSize = 'md',
   readerWidth = 'full', // Full screen view by default!
@@ -38,30 +46,66 @@ export default function LiquidHtmlReader({
   const contentContainerRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Fetch sanitized HTML chapter from /api/html
+  // Fetch chapter HTML (API first, then static fallback for GitHub Pages)
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
     setError(null);
 
     const fetchChapter = async () => {
-      try {
-        const res = await fetch(
-          `/api/html?book=${encodeURIComponent(bookId)}&chapter=${encodeURIComponent(chapterId)}`
-        );
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || `HTTP ${res.status}`);
-        }
-        const data = await res.json();
+      const bp = (process.env.NEXT_PUBLIC_BASE_PATH || '');
+
+      // 1. If cover chapter, render cover directly
+      if (chapterId === 'cover' && coverUrl) {
         if (isMounted) {
-          setContentHtml(data.contentHtml || '');
+          setContentHtml(`
+<div id="sbo-rt-content">
+  <section class="cover-chapter flex flex-col items-center justify-center min-h-[75vh] py-8 text-center">
+    <figure class="cover my-0 mx-auto max-w-lg w-full">
+      <img alt="${chapterTitle} Cover" src="${coverUrl}" class="rounded-xl shadow-2xl mx-auto max-h-[85vh] w-auto object-contain border border-white/10" />
+    </figure>
+  </section>
+</div>`);
           setLoading(false);
-          // Scroll to top on chapter change
-          if (scrollContainerRef.current) {
-            scrollContainerRef.current.scrollTop = 0;
+        }
+        return;
+      }
+
+      // 2. Try API endpoint (if not static GitHub Pages)
+      if (!bp) {
+        try {
+          const res = await fetch(
+            `/api/html?book=${encodeURIComponent(bookId)}&chapter=${encodeURIComponent(chapterId)}`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            if (isMounted && data.contentHtml) {
+              setContentHtml(data.contentHtml);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch {
+          // Fall through to static loader
+        }
+      }
+
+      // 3. Static file loader (GitHub Pages / export mode)
+      try {
+        if (bookFolder && htmlFilename) {
+          const staticUrl = `${bp}/books/${encodeURIComponent(bookFolder)}/${encodeURIComponent(htmlFilename)}`;
+          const res = await fetch(staticUrl);
+          if (res.ok) {
+            const rawHtml = await res.text();
+            const cleaned = extractAndCleanChapterHtml(rawHtml, bookFolder, bp);
+            if (isMounted) {
+              setContentHtml(cleaned);
+              setLoading(false);
+              return;
+            }
           }
         }
+        throw new Error('Chapter content could not be loaded');
       } catch (err: any) {
         if (isMounted) {
           console.error('Failed to load chapter HTML:', err);
